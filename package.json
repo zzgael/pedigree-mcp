@@ -2,11 +2,37 @@
   "name": "pedigree-mcp",
   "version": "1.0.0",
   "description": "MCP server for generating pedigree tree diagrams as PNG images using Bennett 2008 NSGC standard",
+  "author": "zzgael",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zzgael/pedigree-mcp.git"
+  },
+  "homepage": "https://github.com/zzgael/pedigree-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/zzgael/pedigree-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "pedigree",
+    "genetics",
+    "family-tree",
+    "medical",
+    "bennett-standard",
+    "png",
+    "svg"
+  ],
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "pedigree-mcp": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",

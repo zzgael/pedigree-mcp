@@ -1,8 +1,16 @@
 # Pedigree MCP Server
 
-![Pedigree Generator](logo.png)
+<p align="center">
+  <img src="logo.png" alt="Pedigree Generator" width="128">
+</p>
 
-An MCP (Model Context Protocol) server for generating family pedigree tree diagrams as PNG images using standard genetic notation per [Bennett 2008 NSGC guidelines](https://onlinelibrary.wiley.com/doi/full/10.1007/s10897-008-9169-9).
+<p align="center">
+  An MCP (Model Context Protocol) server for generating family pedigree tree diagrams as PNG images using standard genetic notation per <a href="https://onlinelibrary.wiley.com/doi/full/10.1007/s10897-008-9169-9">Bennett 2008 NSGC guidelines</a>.
+</p>
+
+<p align="center">
+  <img src="example.png" alt="Example Pedigree" width="700">
+</p>
 
 ## Installation
 
