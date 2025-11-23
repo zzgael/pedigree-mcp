@@ -157,27 +157,15 @@ server.tool(
             labels: params.labels,
         });
 
-        if (!result.success) {
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Error generating pedigree: ${result.error}`,
-                    },
-                ],
-                isError: true,
-            };
-        }
-
         return {
             content: [
                 {
                     type: 'text',
-                    text: `Pedigree generated successfully!\nIndividuals: ${result.metadata?.individual_count}\nGenerations: ${result.metadata?.generation_count}\nDimensions: ${result.metadata?.width}x${result.metadata?.height}px`,
+                    text: `Pedigree generated successfully!\nIndividuals: ${result.metadata.individual_count}\nGenerations: ${result.metadata.generation_count}\nDimensions: ${result.metadata.width}x${result.metadata.height}px`,
                 },
                 {
                     type: 'image',
-                    data: result.image_base64!,
+                    data: result.image_base64,
                     mimeType: 'image/png',
                 },
             ],

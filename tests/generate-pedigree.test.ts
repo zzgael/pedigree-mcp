@@ -4,29 +4,22 @@ import type { Individual } from '../src/types.js';
 
 describe('generatePedigree tool', () => {
     describe('input validation', () => {
-        it('should return error for empty dataset', async () => {
-            const result = await generatePedigree({ dataset: [] });
-
-            expect(result.success).toBe(false);
-            expect(result.error).toContain('non-empty array');
+        it('should throw error for empty dataset', async () => {
+            await expect(generatePedigree({ dataset: [] })).rejects.toThrow(
+                'non-empty array',
+            );
         });
 
-        it('should return error for undefined dataset', async () => {
-            const result = await generatePedigree({
-                dataset: undefined as any,
-            });
-
-            expect(result.success).toBe(false);
-            expect(result.error).toContain('required');
+        it('should throw error for undefined dataset', async () => {
+            await expect(
+                generatePedigree({ dataset: undefined as any }),
+            ).rejects.toThrow('required');
         });
 
-        it('should return error for invalid dataset (not array)', async () => {
-            const result = await generatePedigree({
-                dataset: 'not an array' as any,
-            });
-
-            expect(result.success).toBe(false);
-            expect(result.error).toContain('array');
+        it('should throw error for invalid dataset (not array)', async () => {
+            await expect(
+                generatePedigree({ dataset: 'not an array' as any }),
+            ).rejects.toThrow('array');
         });
     });
 
@@ -46,14 +39,10 @@ describe('generatePedigree tool', () => {
 
             const result = await generatePedigree({ dataset });
 
-            if (!result.success) {
-                console.error('Generation failed:', result.error);
-            }
-            expect(result.success).toBe(true);
             expect(result.image_base64).toBeDefined();
             expect(result.metadata).toBeDefined();
-            expect(result.metadata?.individual_count).toBe(3);
-            expect(result.metadata?.generation_count).toBe(2);
+            expect(result.metadata.individual_count).toBe(3);
+            expect(result.metadata.generation_count).toBe(2);
         });
 
         it('should respect custom width and height', async () => {
@@ -68,9 +57,8 @@ describe('generatePedigree tool', () => {
                 height: 900,
             });
 
-            expect(result.success).toBe(true);
-            expect(result.metadata?.width).toBe(1200);
-            expect(result.metadata?.height).toBe(900);
+            expect(result.metadata.width).toBe(1200);
+            expect(result.metadata.height).toBe(900);
         });
 
         it('should return valid base64 PNG', async () => {
@@ -80,11 +68,10 @@ describe('generatePedigree tool', () => {
 
             const result = await generatePedigree({ dataset });
 
-            expect(result.success).toBe(true);
             expect(result.image_base64).toBeDefined();
 
             // Decode base64 and verify PNG magic bytes
-            const buffer = Buffer.from(result.image_base64!, 'base64');
+            const buffer = Buffer.from(result.image_base64, 'base64');
             expect(buffer[0]).toBe(0x89);
             expect(buffer[1]).toBe(0x50); // P
             expect(buffer[2]).toBe(0x4e); // N
@@ -99,7 +86,7 @@ describe('generatePedigree tool', () => {
                     sex: 'F',
                     top_level: true,
                     status: 1,
-                    ovarian_cancer_diagnosis_age: 72,
+                    conditions: [{ name: 'Ovarian cancer', age: 72 }],
                 },
                 {
                     name: 'gf1',
@@ -112,7 +99,7 @@ describe('generatePedigree tool', () => {
                     name: 'gm1',
                     sex: 'F',
                     top_level: true,
-                    breast_cancer_diagnosis_age: 58,
+                    conditions: [{ name: 'Breast cancer', age: 58 }],
                 },
                 { name: 'f1', sex: 'M', mother: 'gm1', father: 'gf1', age: 52 },
                 {
@@ -121,7 +108,7 @@ describe('generatePedigree tool', () => {
                     mother: 'gm1',
                     father: 'gf1',
                     age: 48,
-                    breast_cancer_diagnosis_age: 44,
+                    conditions: [{ name: 'Breast cancer', age: 44 }],
                 },
                 { name: 'sp1', sex: 'F', top_level: true, age: 50 },
                 {
@@ -138,23 +125,21 @@ describe('generatePedigree tool', () => {
 
             const result = await generatePedigree({ dataset });
 
-            expect(result.success).toBe(true);
-            expect(result.metadata?.individual_count).toBe(9);
-            expect(result.metadata?.generation_count).toBeGreaterThanOrEqual(3);
+            expect(result.metadata.individual_count).toBe(9);
+            expect(result.metadata.generation_count).toBeGreaterThanOrEqual(3);
         });
     });
 
     describe('error handling', () => {
-        it('should return validation error for invalid parent reference', async () => {
+        it('should throw validation error for invalid parent reference', async () => {
             const dataset: Individual[] = [
                 { name: 'child', sex: 'F', mother: 'missing', father: 'dad' },
                 { name: 'dad', sex: 'M', top_level: true },
             ];
 
-            const result = await generatePedigree({ dataset });
-
-            expect(result.success).toBe(false);
-            expect(result.error).toContain('Validation');
+            await expect(generatePedigree({ dataset })).rejects.toThrow(
+                'Validation',
+            );
         });
     });
 });

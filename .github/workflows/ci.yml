@@ -50,4 +50,4 @@ jobs:
         run: npm ci
 
       - name: Check formatting
-        run: npx prettier --check "src/**/*.ts" "tests/**/*.ts"
+        run: npm run lint
