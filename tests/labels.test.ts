@@ -1,76 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import {
-  formatDiseaseLabel,
-  getDiseaseLabels,
-  formatGeneTestResult,
-  getGeneTestLabels,
-  countLabelLines,
-} from '../src/renderer/labels.js';
-import type { Individual, DiseaseConfig } from '../src/types.js';
+import { formatGeneTestResult, getGeneTestLabels } from '../src/renderer/labels.js';
+import type { Individual } from '../src/types.js';
 
 describe('labels', () => {
-  describe('formatDiseaseLabel', () => {
-    it('should format breast_cancer correctly', () => {
-      expect(formatDiseaseLabel('breast_cancer')).toBe('breast ca.');
-    });
-
-    it('should format ovarian_cancer correctly', () => {
-      expect(formatDiseaseLabel('ovarian_cancer')).toBe('ovarian ca.');
-    });
-
-    it('should format breast_cancer2 correctly', () => {
-      expect(formatDiseaseLabel('breast_cancer2')).toBe('breast ca.2');
-    });
-
-    it('should format pancreatic_cancer correctly', () => {
-      expect(formatDiseaseLabel('pancreatic_cancer')).toBe('pancreatic ca.');
-    });
-
-    it('should format prostate_cancer correctly', () => {
-      expect(formatDiseaseLabel('prostate_cancer')).toBe('prostate ca.');
-    });
-  });
-
-  describe('getDiseaseLabels', () => {
-    const diseases: DiseaseConfig[] = [
-      { type: 'breast_cancer', colour: '#F68F35' },
-      { type: 'ovarian_cancer', colour: '#4DAA4D' },
-    ];
-
-    it('should return empty array for individual without diseases', () => {
-      const individual: Individual = { name: 'test', sex: 'F' };
-      const labels = getDiseaseLabels(individual, diseases);
-      expect(labels).toEqual([]);
-    });
-
-    it('should return formatted label for single disease', () => {
-      const individual = { name: 'test', sex: 'F', breast_cancer_diagnosis_age: 55 } as Individual;
-      const labels = getDiseaseLabels(individual, diseases);
-      expect(labels).toEqual(['breast ca.: 55']);
-    });
-
-    it('should return multiple labels for multiple diseases', () => {
-      const individual = {
-        name: 'test',
-        sex: 'F',
-        breast_cancer_diagnosis_age: 55,
-        ovarian_cancer_diagnosis_age: 60,
-      } as Individual;
-      const labels = getDiseaseLabels(individual, diseases);
-      expect(labels).toEqual(['breast ca.: 55', 'ovarian ca.: 60']);
-    });
-
-    it('should ignore non-numeric diagnosis ages', () => {
-      const individual = {
-        name: 'test',
-        sex: 'F',
-        breast_cancer_diagnosis_age: 'unknown',
-      } as any;
-      const labels = getDiseaseLabels(individual, diseases);
-      expect(labels).toEqual([]);
-    });
-  });
-
   describe('formatGeneTestResult', () => {
     it('should format P as +', () => {
       expect(formatGeneTestResult('P')).toBe('+');
@@ -152,50 +84,6 @@ describe('labels', () => {
       expect(labels).toHaveLength(8);
       expect(labels).toContain('BRCA1+');
       expect(labels).toContain('RAD51D+');
-    });
-  });
-
-  describe('countLabelLines', () => {
-    const diseases: DiseaseConfig[] = [
-      { type: 'breast_cancer', colour: '#F68F35' },
-      { type: 'ovarian_cancer', colour: '#4DAA4D' },
-    ];
-
-    it('should return 1 for individual with only name', () => {
-      const individual: Individual = { name: 'test', sex: 'F' };
-      expect(countLabelLines(individual, diseases, [])).toBe(1);
-    });
-
-    it('should return 2 for individual with age', () => {
-      const individual: Individual = { name: 'test', sex: 'F', age: 45 };
-      expect(countLabelLines(individual, diseases, ['age'])).toBe(2);
-    });
-
-    it('should return 2 for individual with age and yob (combined line)', () => {
-      const individual: Individual = { name: 'test', sex: 'F', age: 45, yob: 1980 };
-      expect(countLabelLines(individual, diseases, ['age', 'yob'])).toBe(2);
-    });
-
-    it('should count disease labels', () => {
-      const individual = {
-        name: 'test',
-        sex: 'F',
-        age: 45,
-        breast_cancer_diagnosis_age: 55,
-        ovarian_cancer_diagnosis_age: 60,
-      } as Individual;
-      // 1 (name) + 1 (age) + 2 (diseases) = 4
-      expect(countLabelLines(individual, diseases, ['age'])).toBe(4);
-    });
-
-    it('should count gene test line', () => {
-      const individual = {
-        name: 'test',
-        sex: 'F',
-        brca1_gene_test: { type: 'T', result: 'P' },
-      } as Individual;
-      // 1 (name) + 1 (gene tests) = 2
-      expect(countLabelLines(individual, diseases, [])).toBe(2);
     });
   });
 });

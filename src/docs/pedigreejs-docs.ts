@@ -1,6 +1,6 @@
 export const PEDIGREEJS_DOCUMENTATION = `# Pedigree Generator
 
-Generates PNG pedigree trees using standard genetic notation.
+Generates PNG pedigree trees following Bennett 2008 NSGC standard notation.
 
 ## ⚠️ LIMITS: name≤7chars, display_name≤13chars
 
@@ -12,17 +12,33 @@ Generates PNG pedigree trees using standard genetic notation.
 
 **Display:** \`display_name\`, \`proband\` (index case), \`age\`, \`yob\`, \`status\` (0=alive, 1=deceased)
 
-**Special:** \`noparents\` (adopted, shows brackets), \`mztwin\` (same value=identical twins), \`ashkenazi\` (0/1)
+**Special:** \`noparents\` (adopted, shows brackets), \`mztwin\`/\`dztwin\` (same value=twins), \`ashkenazi\` (0/1)
 
-## Diseases
+## Conditions (Bennett Standard - FREE TEXT)
 
-Pattern: \`{disease}_diagnosis_age: number\`
+Use \`conditions\` array with any disease/condition name:
 
-Built-in: \`breast_cancer\`, \`breast_cancer2\`, \`ovarian_cancer\`, \`pancreatic_cancer\`, \`prostate_cancer\`
+\`\`\`json
+"conditions": [
+  { "name": "Breast cancer", "age": 42 },
+  { "name": "Ovarian cancer", "age": 55 }
+]
+\`\`\`
 
-Labels shown as: "breast ca.: 67", "ovarian ca.: 58"
+**Examples:**
+- \`{ "name": "Huntington's disease", "age": 45 }\`
+- \`{ "name": "Type 2 diabetes" }\` (no age = affected status only)
+- \`{ "name": "Cystic fibrosis" }\`
+- \`{ "name": "Hereditary hemochromatosis", "age": 38 }\`
 
-Colors: breast=#F68F35, breast2=#FFC0CB, ovarian=#4DAA4D, pancreatic=#4289BA, prostate=#D5494A
+**Colors are auto-assigned** from palette based on unique condition names.
+
+## Bennett Standard Indicators
+
+- \`carrier: true\` - Dot in center (obligate/carrier status)
+- \`pregnant: true\` - "P" inside symbol
+- \`terminated: true\` - Small triangle (stillbirth/SAB/termination)
+- \`divorced: true\` - Hash marks on partnership line
 
 ## Gene Tests
 
@@ -36,13 +52,16 @@ Labels shown as: "BRCA1+", "BRCA2-"
 
 ## Visual Features
 
-- **Symbols:** □=male, ○=female, ◇=unknown
-- **Disease:** Pie chart fill (multiple diseases=slices)
+- **Symbols:** □=male, ○=female, ◇=unknown, △=terminated pregnancy
+- **Conditions:** Colored fill/pie chart (multiple conditions=slices)
 - **Deceased:** Diagonal line through symbol
 - **Proband:** Arrow pointing to symbol
-- **Twins:** Horizontal bar connecting siblings with same mztwin
-- **Adopted:** Brackets [ ] around symbol (noparents=true)
-- **Consanguinity:** Double partnership line (auto-detected from shared ancestry)
+- **MZ Twins:** Horizontal bar connecting siblings with same \`mztwin\`
+- **DZ Twins:** Siblings with same \`dztwin\` value
+- **Adopted:** Brackets [ ] around symbol (\`noparents: true\`)
+- **Consanguinity:** Double partnership line (auto-detected)
+- **Carrier:** Dot in center of symbol
+- **Divorced:** Double hash marks on partnership line
 
 ## Options
 
@@ -52,10 +71,10 @@ Labels shown as: "BRCA1+", "BRCA2-"
 
 \`\`\`json
 [
-  {"name":"gf","sex":"M","top_level":true},
-  {"name":"gm","sex":"F","top_level":true,"status":1,"breast_cancer_diagnosis_age":67,"ovarian_cancer_diagnosis_age":63},
-  {"name":"f","sex":"M","mother":"gm","father":"gf","age":56},
-  {"name":"m","sex":"F","breast_cancer_diagnosis_age":55,"age":63,"brca1_gene_test":{"type":"T","result":"P"}},
+  {"name":"gf","sex":"M","top_level":true,"conditions":[{"name":"Heart disease","age":72}]},
+  {"name":"gm","sex":"F","top_level":true,"status":1,"conditions":[{"name":"Breast cancer","age":67},{"name":"Ovarian cancer","age":63}]},
+  {"name":"f","sex":"M","mother":"gm","father":"gf","age":56,"carrier":true},
+  {"name":"m","sex":"F","conditions":[{"name":"Breast cancer","age":55}],"age":63,"brca1_gene_test":{"type":"T","result":"P"}},
   {"name":"ana","display_name":"Ana","sex":"F","mother":"m","father":"f","proband":true,"age":25,"yob":1996}
 ]
 \`\`\`

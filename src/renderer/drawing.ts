@@ -4,10 +4,14 @@
  */
 
 import * as d3 from 'd3';
-import type { Individual, DiseaseConfig } from '../types.js';
 
 type SVGSelection = d3.Selection<SVGSVGElement, unknown, null, undefined>;
 type GroupSelection = d3.Selection<SVGGElement, unknown, null, undefined>;
+
+// Generic color item for conditions
+interface ColorItem {
+  colour: string;
+}
 
 /**
  * Draw a male symbol (square)
@@ -15,7 +19,7 @@ type GroupSelection = d3.Selection<SVGGElement, unknown, null, undefined>;
 export function drawMaleSymbol(
   g: GroupSelection,
   symbolSize: number,
-  diseases: DiseaseConfig[],
+  conditions: ColorItem[],
   nodeBackground: string,
 ): void {
   g.append('rect')
@@ -23,14 +27,14 @@ export function drawMaleSymbol(
     .attr('y', -symbolSize / 2)
     .attr('width', symbolSize)
     .attr('height', symbolSize)
-    .attr('fill', diseases.length > 0 ? diseases[0].colour : nodeBackground)
+    .attr('fill', conditions.length > 0 ? conditions[0].colour : nodeBackground)
     .attr('stroke', '#333')
     .attr('stroke-width', 2);
 
-  // Add additional disease quarters if multiple diseases
-  if (diseases.length > 1) {
+  // Add additional condition quarters if multiple conditions
+  if (conditions.length > 1) {
     const quadrantSize = symbolSize / 2;
-    diseases.slice(1, 4).forEach((disease, idx) => {
+    conditions.slice(1, 4).forEach((condition, idx) => {
       const qx = idx === 0 ? 0 : idx === 1 ? -quadrantSize : 0;
       const qy = idx === 0 ? -quadrantSize : idx === 1 ? 0 : 0;
       g.append('rect')
@@ -38,32 +42,32 @@ export function drawMaleSymbol(
         .attr('y', qy)
         .attr('width', quadrantSize)
         .attr('height', quadrantSize)
-        .attr('fill', disease.colour)
+        .attr('fill', condition.colour)
         .attr('stroke', 'none');
     });
   }
 }
 
 /**
- * Draw a female symbol (circle) with disease pie chart
+ * Draw a female symbol (circle) with condition pie chart
  */
 export function drawFemaleSymbol(
   g: GroupSelection,
   symbolSize: number,
-  diseases: DiseaseConfig[],
+  conditions: ColorItem[],
   nodeBackground: string,
 ): void {
   g.append('circle')
     .attr('r', symbolSize / 2)
-    .attr('fill', diseases.length > 0 ? diseases[0].colour : nodeBackground)
+    .attr('fill', conditions.length > 0 ? conditions[0].colour : nodeBackground)
     .attr('stroke', '#333')
     .attr('stroke-width', 2);
 
-  // Add disease pie slices if multiple diseases
-  if (diseases.length > 1) {
-    const arc = d3.arc<d3.PieArcDatum<DiseaseConfig>>();
-    const pie = d3.pie<DiseaseConfig>().value(1);
-    const arcs = pie(diseases.slice(0, 4));
+  // Add condition pie slices if multiple conditions
+  if (conditions.length > 1) {
+    const arc = d3.arc<d3.PieArcDatum<ColorItem>>();
+    const pie = d3.pie<ColorItem>().value(1);
+    const arcs = pie(conditions.slice(0, 4));
 
     arcs.forEach((arcData) => {
       g.append('path')
@@ -79,13 +83,13 @@ export function drawFemaleSymbol(
 export function drawUnknownSymbol(
   g: GroupSelection,
   symbolSize: number,
-  diseases: DiseaseConfig[],
+  conditions: ColorItem[],
   nodeBackground: string,
 ): void {
   const half = symbolSize / 2;
   g.append('polygon')
     .attr('points', `0,${-half} ${half},0 0,${half} ${-half},0`)
-    .attr('fill', diseases.length > 0 ? diseases[0].colour : nodeBackground)
+    .attr('fill', conditions.length > 0 ? conditions[0].colour : nodeBackground)
     .attr('stroke', '#333')
     .attr('stroke-width', 2);
 }

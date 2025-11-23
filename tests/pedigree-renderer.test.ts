@@ -173,43 +173,36 @@ describe('PedigreeRenderer', () => {
       expect(lineMatches.length).toBeGreaterThanOrEqual(10);
     });
 
-    it('should render disease with colored fill', () => {
+    it('should render condition with colored fill', () => {
       const dataset: Individual[] = [
         { name: 'gf', sex: 'M', top_level: true },
-        { name: 'gm', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 55 },
+        { name: 'gm', sex: 'F', top_level: true, conditions: [{ name: 'Breast cancer', age: 55 }] },
       ];
 
-      const renderer = new PedigreeRenderer(dataset, {
-        diseases: [{ type: 'breast_cancer', colour: '#F68F35' }],
-      });
+      const renderer = new PedigreeRenderer(dataset);
       const svg = renderer.renderSvg();
 
-      // Breast cancer color is #F68F35
+      // Auto-assigned color from palette (first color is #F68F35)
       expect(svg).toContain('#F68F35');
-      // Disease label
-      expect(svg).toContain('breast ca.: 55');
+      // Condition label
+      expect(svg).toContain('Breast cancer: 55');
     });
 
-    it('should render multiple diseases with multiple colors', () => {
+    it('should render multiple conditions with multiple colors', () => {
       const dataset: Individual[] = [
-        { name: 'patient', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 55, ovarian_cancer_diagnosis_age: 60 },
+        { name: 'patient', sex: 'F', top_level: true, conditions: [{ name: 'Breast cancer', age: 55 }, { name: 'Ovarian cancer', age: 60 }] },
       ] as Individual[];
 
-      const renderer = new PedigreeRenderer(dataset, {
-        diseases: [
-          { type: 'breast_cancer', colour: '#F68F35' },
-          { type: 'ovarian_cancer', colour: '#4DAA4D' },
-        ],
-      });
+      const renderer = new PedigreeRenderer(dataset);
       const svg = renderer.renderSvg();
 
-      // Breast cancer color
+      // First condition gets first color from palette
       expect(svg).toContain('#F68F35');
-      // Ovarian cancer color
+      // Second condition gets second color from palette
       expect(svg).toContain('#4DAA4D');
-      // Disease labels
-      expect(svg).toContain('breast ca.: 55');
-      expect(svg).toContain('ovarian ca.: 60');
+      // Condition labels
+      expect(svg).toContain('Breast cancer: 55');
+      expect(svg).toContain('Ovarian cancer: 60');
     });
 
     it('should render gene test results with +/- notation', () => {
@@ -292,27 +285,27 @@ describe('PedigreeRenderer', () => {
     });
 
     it('should not overlap nodes with multiple partnerships in same generation', () => {
-      // Regression test: complex pedigree with multiple partnerships and disease labels
+      // Regression test: complex pedigree with multiple partnerships and condition labels
       const dataset: Individual[] = [
         // Grandparents (gen 0) - 4 couples
-        { name: 'MGF', sex: 'M', top_level: true, prostate_cancer_diagnosis_age: 78 },
-        { name: 'MGM', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 70, ovarian_cancer_diagnosis_age: 75 },
+        { name: 'MGF', sex: 'M', top_level: true, conditions: [{ name: 'Prostate cancer', age: 78 }] },
+        { name: 'MGM', sex: 'F', top_level: true, conditions: [{ name: 'Breast cancer', age: 70 }, { name: 'Ovarian cancer', age: 75 }] },
         { name: 'PGF', sex: 'M', top_level: true },
-        { name: 'PGM', sex: 'F', top_level: true, pancreatic_cancer_diagnosis_age: 82 },
-        // Parents generation (gen 1) - multiple partnerships with diseases
-        { name: 'Father', sex: 'M', mother: 'MGM', father: 'MGF', age: 52, prostate_cancer_diagnosis_age: 48 },
-        { name: 'Mother', sex: 'F', top_level: true, age: 50, breast_cancer_diagnosis_age: 45 },
+        { name: 'PGM', sex: 'F', top_level: true, conditions: [{ name: 'Pancreatic cancer', age: 82 }] },
+        // Parents generation (gen 1) - multiple partnerships with conditions
+        { name: 'Father', sex: 'M', mother: 'MGM', father: 'MGF', age: 52, conditions: [{ name: 'Prostate cancer', age: 48 }] },
+        { name: 'Mother', sex: 'F', top_level: true, age: 50, conditions: [{ name: 'Breast cancer', age: 45 }] },
         { name: 'AuntsH', sex: 'M', top_level: true, age: 56 }, // Aunt's husband
-        { name: 'M Aunt', sex: 'F', mother: 'MGM', father: 'MGF', age: 55, ovarian_cancer_diagnosis_age: 50 },
-        { name: 'P Uncle', sex: 'M', mother: 'PGM', father: 'PGF', age: 58, pancreatic_cancer_diagnosis_age: 55 },
+        { name: 'M Aunt', sex: 'F', mother: 'MGM', father: 'MGF', age: 55, conditions: [{ name: 'Ovarian cancer', age: 50 }] },
+        { name: 'P Uncle', sex: 'M', mother: 'PGM', father: 'PGF', age: 58, conditions: [{ name: 'Pancreatic cancer', age: 55 }] },
         { name: 'UnclesW', sex: 'F', top_level: true, age: 57 }, // Uncle's wife
         // Children (gen 2) - multiple families
-        { name: 'Proband', sex: 'F', mother: 'Mother', father: 'Father', proband: true, age: 30, breast_cancer_diagnosis_age: 28 },
-        { name: 'MZ Twin', sex: 'F', mother: 'Mother', father: 'Father', age: 30, mztwin: 'twins', breast_cancer_diagnosis_age: 29 },
+        { name: 'Proband', sex: 'F', mother: 'Mother', father: 'Father', proband: true, age: 30, conditions: [{ name: 'Breast cancer', age: 28 }] },
+        { name: 'MZ Twin', sex: 'F', mother: 'Mother', father: 'Father', age: 30, mztwin: 'twins', conditions: [{ name: 'Breast cancer', age: 29 }] },
         { name: 'Brother', sex: 'M', mother: 'Mother', father: 'Father', age: 28 },
         { name: 'Sister', sex: 'F', mother: 'Mother', father: 'Father', age: 26 },
-        { name: 'M Cousin', sex: 'F', mother: 'M Aunt', father: 'AuntsH', age: 25, ovarian_cancer_diagnosis_age: 23 },
-        { name: 'P Cousin', sex: 'M', mother: 'UnclesW', father: 'P Uncle', age: 27, prostate_cancer_diagnosis_age: 35 },
+        { name: 'M Cousin', sex: 'F', mother: 'M Aunt', father: 'AuntsH', age: 25, conditions: [{ name: 'Ovarian cancer', age: 23 }] },
+        { name: 'P Cousin', sex: 'M', mother: 'UnclesW', father: 'P Uncle', age: 27, conditions: [{ name: 'Prostate cancer', age: 35 }] },
       ] as Individual[];
 
       const renderer = new PedigreeRenderer(dataset);
@@ -376,8 +369,8 @@ describe('PedigreeRenderer', () => {
     it('should generate PNG with reasonable size', async () => {
       const dataset: Individual[] = [
         { name: 'gf', sex: 'M', top_level: true },
-        { name: 'gm', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 55 },
-        { name: 'mom', sex: 'F', mother: 'gm', father: 'gf', breast_cancer_diagnosis_age: 42 },
+        { name: 'gm', sex: 'F', top_level: true, conditions: [{ name: 'Breast cancer', age: 55 }] },
+        { name: 'mom', sex: 'F', mother: 'gm', father: 'gf', conditions: [{ name: 'Breast cancer', age: 42 }] },
         { name: 'dad', sex: 'M', top_level: true },
         { name: 'p', sex: 'F', mother: 'mom', father: 'dad', proband: true },
       ];
@@ -463,7 +456,7 @@ describe('PedigreeRenderer', () => {
       expect(lineCount).toBeGreaterThanOrEqual(2);
     });
 
-    it('should handle pedigree with no diseases (plain family tree)', () => {
+    it('should handle pedigree with no conditions (plain family tree)', () => {
       const dataset: Individual[] = [
         { name: 'gf', sex: 'M', top_level: true },
         { name: 'gm', sex: 'F', top_level: true },
@@ -473,38 +466,34 @@ describe('PedigreeRenderer', () => {
       const renderer = new PedigreeRenderer(dataset);
       const svg = renderer.renderSvg();
 
-      // No disease colors should be present
-      expect(svg).not.toContain('#F68F35'); // breast cancer
-      expect(svg).not.toContain('#4DAA4D'); // ovarian cancer
+      // No condition colors should be present (no conditions means no colored fills)
+      expect(svg).not.toContain('#F68F35'); // first palette color
+      expect(svg).not.toContain('#4DAA4D'); // second palette color
       expect(svg).toContain('>30y<'); // age label
     });
 
-    it('should handle individual with multiple diseases (pie chart)', () => {
+    it('should handle individual with multiple conditions (pie chart)', () => {
       const dataset: Individual[] = [
         {
           name: 'p',
           sex: 'F',
           top_level: true,
           proband: true,
-          breast_cancer_diagnosis_age: 45,
-          ovarian_cancer_diagnosis_age: 52,
-          pancreatic_cancer_diagnosis_age: 58,
+          conditions: [
+            { name: 'Breast cancer', age: 45 },
+            { name: 'Ovarian cancer', age: 52 },
+            { name: 'Pancreatic cancer', age: 58 },
+          ],
         },
       ] as Individual[];
 
-      const renderer = new PedigreeRenderer(dataset, {
-        diseases: [
-          { type: 'breast_cancer', colour: '#F68F35' },
-          { type: 'ovarian_cancer', colour: '#4DAA4D' },
-          { type: 'pancreatic_cancer', colour: '#4289BA' },
-        ],
-      });
+      const renderer = new PedigreeRenderer(dataset);
       const svg = renderer.renderSvg();
 
-      // Should have multiple disease colors
-      expect(svg).toContain('#F68F35'); // breast
-      expect(svg).toContain('#4DAA4D'); // ovarian
-      expect(svg).toContain('#4289BA'); // pancreatic
+      // Should have multiple condition colors from palette
+      expect(svg).toContain('#F68F35'); // first
+      expect(svg).toContain('#4DAA4D'); // second
+      expect(svg).toContain('#4289BA'); // third
       // Should have path elements for pie slices
       expect(svg).toContain('<path');
     });

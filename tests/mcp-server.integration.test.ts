@@ -89,7 +89,8 @@ describe('Pedigree MCP Server Integration', () => {
       expect(text).toContain('mother');
       expect(text).toContain('father');
       expect(text).toContain('proband');
-      expect(text).toContain('breast_cancer');
+      expect(text).toContain('conditions');
+      expect(text).toContain('Bennett');
     });
   });
 
@@ -128,14 +129,14 @@ describe('Pedigree MCP Server Integration', () => {
       expect(buffer[3]).toBe(0x47); // G
     }, 30000);
 
-    it('should generate PNG with disease markers', async () => {
+    it('should generate PNG with condition markers', async () => {
       const result = await client.callTool({
         name: 'generate_pedigree',
         arguments: {
           dataset: [
             { name: 'gf', sex: 'M', top_level: true },
-            { name: 'gm', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 55 },
-            { name: 'mom', sex: 'F', mother: 'gm', father: 'gf', breast_cancer_diagnosis_age: 42 },
+            { name: 'gm', sex: 'F', top_level: true, conditions: [{ name: 'Breast cancer', age: 55 }] },
+            { name: 'mom', sex: 'F', mother: 'gm', father: 'gf', conditions: [{ name: 'Breast cancer', age: 42 }] },
             { name: 'dad', sex: 'M', top_level: true },
             { name: 'p', sex: 'F', mother: 'mom', father: 'dad', proband: true, age: 25 },
           ],
@@ -191,11 +192,11 @@ describe('Pedigree MCP Server Integration', () => {
         arguments: {
           dataset: [
             { name: 'ggf', sex: 'M', top_level: true, status: 1 },
-            { name: 'ggm', sex: 'F', top_level: true, status: 1, ovarian_cancer_diagnosis_age: 72 },
+            { name: 'ggm', sex: 'F', top_level: true, status: 1, conditions: [{ name: 'Ovarian cancer', age: 72 }] },
             { name: 'gf1', sex: 'M', mother: 'ggm', father: 'ggf', status: 1 },
-            { name: 'gm1', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 58 },
+            { name: 'gm1', sex: 'F', top_level: true, conditions: [{ name: 'Breast cancer', age: 58 }] },
             { name: 'f1', sex: 'M', mother: 'gm1', father: 'gf1', age: 52 },
-            { name: 'm1', sex: 'F', mother: 'gm1', father: 'gf1', age: 48, breast_cancer_diagnosis_age: 44 },
+            { name: 'm1', sex: 'F', mother: 'gm1', father: 'gf1', age: 48, conditions: [{ name: 'Breast cancer', age: 44 }] },
             { name: 'sp1', sex: 'F', top_level: true, age: 50 },
             { name: 'ch1', display_name: 'Patient', sex: 'F', mother: 'm1', father: 'f1', proband: true, age: 25 },
             { name: 'ch2', sex: 'M', mother: 'm1', father: 'f1', age: 22 },
@@ -231,7 +232,7 @@ describe('Pedigree MCP Server Integration', () => {
         arguments: {
           dataset: [
             { name: 'm11', sex: 'M', top_level: true },
-            { name: 'f11', display_name: 'Jane', sex: 'F', status: 1, top_level: true, breast_cancer_diagnosis_age: 67 },
+            { name: 'f11', display_name: 'Jane', sex: 'F', status: 1, top_level: true, conditions: [{ name: 'Breast cancer', age: 67 }] },
             { name: 'ch1', display_name: 'Ana', sex: 'F', mother: 'f11', father: 'm11', proband: true, age: 25 },
           ],
         },

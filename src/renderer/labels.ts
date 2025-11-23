@@ -3,41 +3,7 @@
  * Ported from pedigreejs labels.js
  */
 
-import type { Individual, DiseaseConfig } from '../types.js';
-
-/**
- * Format disease type for display label (pedigreejs style)
- * "breast_cancer" → "breast ca."
- * "ovarian_cancer" → "ovarian ca."
- * "breast_cancer2" → "breast ca.2"
- */
-export function formatDiseaseLabel(diseaseType: string): string {
-  return diseaseType
-    .replace(/_/g, ' ')
-    .replace('cancer', 'ca.')
-    .replace('ca. ', 'ca.') // Fix "ca. 2" → "ca.2"
-    .trim();
-}
-
-/**
- * Get disease labels with diagnosis ages for an individual
- * Returns array of formatted strings like "breast ca.: 67"
- */
-export function getDiseaseLabels(individual: Individual, diseases: DiseaseConfig[]): string[] {
-  const labels: string[] = [];
-
-  for (const disease of diseases) {
-    const diagnosisKey = `${disease.type}_diagnosis_age`;
-    if (diagnosisKey in individual) {
-      const age = (individual as any)[diagnosisKey];
-      if (typeof age === 'number') {
-        labels.push(`${formatDiseaseLabel(disease.type)}: ${age}`);
-      }
-    }
-  }
-
-  return labels;
-}
+import type { Individual } from '../types.js';
 
 /**
  * Format gene test result (P→+, N→-)
@@ -71,20 +37,3 @@ export function getGeneTestLabels(individual: Individual): string[] {
   return labels;
 }
 
-/**
- * Count the number of label lines for an individual
- * Used for bounds calculation
- */
-export function countLabelLines(
-  individual: Individual,
-  diseases: DiseaseConfig[],
-  showLabels: string[],
-): number {
-  let lines = 1; // Name always shown
-  const showAge = showLabels.includes('age') && individual.age !== undefined;
-  const showYob = showLabels.includes('yob') && individual.yob !== undefined;
-  if (showAge || showYob) lines++;
-  lines += getDiseaseLabels(individual, diseases).length;
-  if (getGeneTestLabels(individual).length > 0) lines++;
-  return lines;
-}

@@ -6,10 +6,16 @@
 import * as d3 from 'd3';
 import { JSDOM } from 'jsdom';
 import sharp from 'sharp';
-import { DEFAULT_OPTIONS } from '../types.js';
-import type { Individual, PedigreeOptions, DiseaseConfig } from '../types.js';
+import { DEFAULT_OPTIONS, COLOR_PALETTE } from '../types.js';
+import type { Individual, PedigreeOptions, Condition } from '../types.js';
 import { isConsanguineous, getTwins, getDzTwins } from './utils.js';
-import { getDiseaseLabels, getGeneTestLabels, countLabelLines } from './labels.js';
+import { getGeneTestLabels } from './labels.js';
+
+interface ConditionColor {
+  name: string;
+  colour: string;
+}
+
 import {
   drawMaleSymbol,
   drawFemaleSymbol,
@@ -45,6 +51,7 @@ export class PedigreeRenderer {
   private individuals: Map<string, Individual>;
   private nodePositions: Map<string, NodePosition>;
   private partnerships: Partnership[];
+  private conditionColorMap: Map<string, string>;
 
   constructor(
     private dataset: Individual[],
@@ -54,9 +61,34 @@ export class PedigreeRenderer {
     this.individuals = new Map();
     this.nodePositions = new Map();
     this.partnerships = [];
+    this.conditionColorMap = new Map();
 
     for (const ind of dataset) {
       this.individuals.set(ind.name, ind);
+    }
+
+    // Build color map from all conditions in dataset
+    this.buildConditionColorMap();
+  }
+
+  /**
+   * Auto-assign colors to all unique conditions found in the dataset
+   */
+  private buildConditionColorMap(): void {
+    const allConditions = new Set<string>();
+
+    for (const ind of this.dataset) {
+      if (ind.conditions) {
+        for (const condition of ind.conditions) {
+          allConditions.add(condition.name);
+        }
+      }
+    }
+
+    let colorIndex = 0;
+    for (const conditionName of allConditions) {
+      this.conditionColorMap.set(conditionName, COLOR_PALETTE[colorIndex % COLOR_PALETTE.length]);
+      colorIndex++;
     }
   }
 
@@ -323,19 +355,69 @@ export class PedigreeRenderer {
     }
   }
 
-  private getDiseases(individual: Individual): DiseaseConfig[] {
-    const diseases: DiseaseConfig[] = [];
-    const keys = Object.keys(individual);
-
-    for (const disease of this.options.diseases) {
-      const prefix = disease.type;
-      const hasDisease = keys.some((k) => k.startsWith(prefix + '_') || k === prefix);
-      if (hasDisease) {
-        diseases.push(disease);
-      }
+  /**
+   * Get condition colors for an individual
+   */
+  private getConditionColors(individual: Individual): ConditionColor[] {
+    if (!individual.conditions || individual.conditions.length === 0) {
+      return [];
     }
 
-    return diseases;
+    return individual.conditions.map((condition) => ({
+      name: condition.name,
+      colour: this.conditionColorMap.get(condition.name) || COLOR_PALETTE[0],
+    }));
+  }
+
+  /**
+   * Get condition labels for display (abbreviated per Bennett: "dx. Condition Age")
+   */
+  private getConditionLabels(individual: Individual): string[] {
+    if (!individual.conditions || individual.conditions.length === 0) {
+      return [];
+    }
+
+    return individual.conditions.map((condition) => {
+      // Abbreviate long condition names
+      let name = condition.name;
+      if (name.length > 15) {
+        // Take first word or abbreviate
+        const words = name.split(/\s+/);
+        if (words.length > 1) {
+          name = words.map((w) => w[0]).join('');
+        } else {
+          name = name.substring(0, 12) + '...';
+        }
+      }
+
+      if (condition.age !== undefined) {
+        return `${name}: ${condition.age}`;
+      }
+      return name;
+    });
+  }
+
+  /**
+   * Count label lines for bounds calculation
+   */
+  private countLabelLines(individual: Individual): number {
+    let lines = 1; // name
+
+    // Age/YOB
+    const showAge = this.options.labels.includes('age') && individual.age !== undefined;
+    const showYob = this.options.labels.includes('yob') && individual.yob !== undefined;
+    if (showAge || showYob) lines++;
+
+    // Conditions
+    if (individual.conditions) {
+      lines += individual.conditions.length;
+    }
+
+    // Gene tests
+    const geneTestLabels = getGeneTestLabels(individual);
+    if (geneTestLabels.length > 0) lines++;
+
+    return lines;
   }
 
   private calculateBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
@@ -356,7 +438,7 @@ export class PedigreeRenderer {
       maxX = Math.max(maxX, pos.x + symbol_size / 2 + textWidthEstimate / 2);
       minY = Math.min(minY, pos.y - symbol_size / 2 - 10);
 
-      const labelLines = countLabelLines(ind, this.options.diseases, this.options.labels);
+      const labelLines = this.countLabelLines(ind);
       const bottomY = pos.y + symbol_size / 2 + labelPadding + labelLines * lineHeight;
       maxY = Math.max(maxY, bottomY);
     }
@@ -508,7 +590,7 @@ export class PedigreeRenderer {
 
     for (const [, pos] of this.nodePositions) {
       const ind = pos.individual;
-      const diseases = this.getDiseases(ind);
+      const conditionColors = this.getConditionColors(ind);
       const g = svg.append('g').attr('transform', `translate(${pos.x}, ${pos.y})`);
 
       // Draw symbol based on sex (or termination triangle per Bennett standard)
@@ -516,11 +598,11 @@ export class PedigreeRenderer {
         // Bennett standard: small triangle for stillbirth/SAB/termination
         drawTerminationSymbol(g as any, symbolSize, nodeBackground);
       } else if (ind.sex === 'M') {
-        drawMaleSymbol(g as any, symbolSize, diseases, nodeBackground);
+        drawMaleSymbol(g as any, symbolSize, conditionColors, nodeBackground);
       } else if (ind.sex === 'F') {
-        drawFemaleSymbol(g as any, symbolSize, diseases, nodeBackground);
+        drawFemaleSymbol(g as any, symbolSize, conditionColors, nodeBackground);
       } else {
-        drawUnknownSymbol(g as any, symbolSize, diseases, nodeBackground);
+        drawUnknownSymbol(g as any, symbolSize, conditionColors, nodeBackground);
       }
 
       // Indicators
@@ -561,10 +643,10 @@ export class PedigreeRenderer {
         labelY += lineHeight;
       }
 
-      // Disease labels
-      const diseaseLabels = getDiseaseLabels(ind, this.options.diseases);
-      for (const diseaseLabel of diseaseLabels) {
-        drawLabel(g as any, diseaseLabel, labelY, fontFamily, fontSize);
+      // Condition labels (free text per Bennett standard)
+      const conditionLabels = this.getConditionLabels(ind);
+      for (const conditionLabel of conditionLabels) {
+        drawLabel(g as any, conditionLabel, labelY, fontFamily, fontSize);
         labelY += lineHeight;
       }
 

@@ -25,12 +25,13 @@ describe('getDocumentation tool', () => {
     expect(docs).toContain('father');
   });
 
-  it('should include disease properties', () => {
+  it('should document conditions (Bennett standard free text)', () => {
     const docs = getDocumentation();
 
-    expect(docs).toContain('breast_cancer');
-    expect(docs).toContain('ovarian_cancer');
-    expect(docs).toContain('diagnosis_age');
+    expect(docs).toContain('conditions');
+    expect(docs).toContain('Breast cancer');
+    expect(docs.toLowerCase()).toContain('free text');
+    expect(docs).toContain('Bennett');
   });
 
   it('should contain working examples', () => {

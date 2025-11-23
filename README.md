@@ -5,6 +5,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/zzgael/pedigree-mcp/actions/workflows/ci.yml"><img src="https://github.com/zzgael/pedigree-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/v/pedigree-mcp.svg" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/dm/pedigree-mcp.svg" alt="npm downloads"></a>
+  <a href="https://github.com/zzgael/pedigree-mcp/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/pedigree-mcp.svg" alt="license"></a>
+</p>
+
+<p align="center">
   An MCP (Model Context Protocol) server for generating family pedigree tree diagrams as PNG images using standard genetic notation per <a href="https://onlinelibrary.wiley.com/doi/full/10.1007/s10897-008-9169-9">Bennett 2008 NSGC guidelines</a>.
 </p>
 
@@ -72,7 +79,7 @@ This implementation follows the [NSGC Standardized Human Pedigree Nomenclature](
 | Square | Male | `sex: "M"` |
 | Circle | Female | `sex: "F"` |
 | Diamond | Unknown sex | `sex: "U"` |
-| Filled shape | Affected individual | Disease properties |
+| Filled shape | Affected individual | `conditions: [...]` |
 | Diagonal line | Deceased | `status: 1` |
 | Arrow (lower-left) | Proband | `proband: true` |
 | Brackets [ ] | Adopted | `noparents: true` |
@@ -84,33 +91,26 @@ This implementation follows the [NSGC Standardized Human Pedigree Nomenclature](
 | Small triangle | Stillbirth/SAB/termination | `terminated: true` |
 | Hash marks on line | Divorced/separated | `divorced: true` |
 
-### Disease/Condition Markers
+### Conditions (Bennett Standard - FREE TEXT)
 
-Supports **any hereditary condition** - not limited to cancer. Configure diseases per your use case:
+Per Bennett 2008 standard, conditions are documented using **free text**. Simply provide a `conditions` array with any disease/condition name:
 
-```typescript
-// Pass diseases config when generating pedigree
-diseases: [
-  { type: 'huntington', colour: '#6A5ACD' },
-  { type: 'cardiomyopathy', colour: '#DC143C' },
-  { type: 'cystic_fibrosis', colour: '#228B22' },
-]
+```json
+{
+  "conditions": [
+    { "name": "Breast cancer", "age": 42 },
+    { "name": "Ovarian cancer", "age": 55 }
+  ]
+}
 ```
 
-**Built-in presets available:**
+**Examples:**
+- `{ "name": "Huntington's disease", "age": 45 }`
+- `{ "name": "Type 2 diabetes" }` (no age = affected status only)
+- `{ "name": "Cystic fibrosis" }`
+- `{ "name": "Hereditary hemochromatosis", "age": 38 }`
 
-| Preset | Conditions |
-|--------|------------|
-| `cancer` | breast, ovarian, colorectal, pancreatic, prostate |
-| `cardiac` | cardiomyopathy, long_qt, marfan, sudden_death |
-| `neurological` | huntington, alzheimer, parkinson, als |
-| `hematological` | sickle_cell, hemophilia, thalassemia |
-
-**Property patterns:**
-- `{condition}_diagnosis_age: number` - Age at diagnosis (e.g., `huntington_diagnosis_age: 45`)
-- `{condition}_affected: boolean` - Affected status without age (e.g., `cystic_fibrosis_affected: true`)
-
-Multiple diseases show as quadrants (male) or pie slices (female).
+**Colors are auto-assigned** from a palette based on unique condition names. Multiple conditions show as quadrants (male) or pie slices (female).
 
 ### Genetic Testing Results
 
@@ -128,7 +128,7 @@ Gene test result codes:
 - **type**: `T` (tested), `S` (screening), `-` (unknown)
 - **result**: `P` (positive), `N` (negative), `-` (unknown/VUS)
 
-Labels appear as: `BRCA1+` (positive), `HTT-` (negative), `APOE?` (unknown)
+Labels appear as: `BRCA1+` (positive), `HTT-` (negative)
 
 ## Tools
 
@@ -157,11 +157,11 @@ Generates a PNG image of a family pedigree tree.
 ```typescript
 interface Individual {
   // Required
-  name: string;           // Unique ID (max 13 chars recommended)
+  name: string;           // Unique ID (max 7 chars)
   sex: "M" | "F" | "U";   // Male, Female, Unknown
 
   // Identity
-  display_name?: string;  // Human-readable name for display
+  display_name?: string;  // Human-readable name for display (max 13 chars)
   top_level?: boolean;    // Founding individual (no parents)
   proband?: boolean;      // Index case
 
@@ -185,15 +185,16 @@ interface Individual {
   divorced?: boolean;     // Divorced from partner (hash marks)
   noparents?: boolean;    // Adopted (brackets around symbol)
 
-  // Diseases (prefix_diagnosis_age pattern)
-  breast_cancer_diagnosis_age?: number;
-  ovarian_cancer_diagnosis_age?: number;
-  // ... any disease matching configured patterns
+  // Conditions (Bennett standard - FREE TEXT)
+  conditions?: Array<{
+    name: string;         // Any condition: "Breast cancer", "Huntington's disease", etc.
+    age?: number;         // Age at diagnosis/onset
+  }>;
 
-  // Genetic tests
+  // Genetic tests (pattern: {gene}_gene_test)
   brca1_gene_test?: { type: "-"|"S"|"T", result: "-"|"P"|"N" };
   brca2_gene_test?: { type: "-"|"S"|"T", result: "-"|"P"|"N" };
-  // ... other gene tests
+  // ... any gene test
 }
 ```
 
@@ -204,10 +205,22 @@ interface Individual {
 ```json
 [
   {"name": "MGF", "sex": "M", "top_level": true},
-  {"name": "MGM", "sex": "F", "top_level": true, "breast_cancer_diagnosis_age": 55},
-  {"name": "Mother", "sex": "F", "mother": "MGM", "father": "MGF", "breast_cancer_diagnosis_age": 42},
+  {"name": "MGM", "sex": "F", "top_level": true, "conditions": [{"name": "Breast cancer", "age": 55}]},
+  {"name": "Mother", "sex": "F", "mother": "MGM", "father": "MGF", "conditions": [{"name": "Breast cancer", "age": 42}]},
   {"name": "Father", "sex": "M", "top_level": true},
   {"name": "Proband", "display_name": "Sarah", "sex": "F", "mother": "Mother", "father": "Father", "proband": true, "age": 25, "brca1_gene_test": {"type": "T", "result": "P"}}
+]
+```
+
+### Neurological Condition Pedigree
+
+```json
+[
+  {"name": "GF", "sex": "M", "top_level": true, "status": 1, "conditions": [{"name": "Huntington's disease", "age": 52}]},
+  {"name": "GM", "sex": "F", "top_level": true},
+  {"name": "Father", "sex": "M", "mother": "GM", "father": "GF", "conditions": [{"name": "Huntington's disease", "age": 48}]},
+  {"name": "Mother", "sex": "F", "top_level": true},
+  {"name": "Proband", "sex": "M", "mother": "Mother", "father": "Father", "proband": true, "age": 25, "carrier": true}
 ]
 ```
 
@@ -249,12 +262,6 @@ npm run dev
 # Run all tests
 npm test
 
-# Run unit tests only
-npm run test:unit
-
-# Run integration tests
-npm run test:integration
-
 # Build for production
 npm run build
 
@@ -264,10 +271,10 @@ npx tsc --noEmit
 
 ## Testing
 
-- **101 tests total** covering:
+- **87 tests total** covering:
   - Validation (parent references, gender constraints)
   - SVG rendering (all symbol types, indicators)
-  - Disease markers and multi-disease quadrants
+  - Condition markers and multi-condition pie charts
   - Gene test formatting
   - Twin rendering (MZ with bar, DZ without)
   - Consanguinity detection

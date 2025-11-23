@@ -11,8 +11,13 @@ const GeneTestSchema = z.object({
   result: z.enum(['-', 'P', 'N']),
 });
 
-// Use passthrough() to allow arbitrary disease properties (e.g., custom_disease_diagnosis_age)
-// The library uses prefix matching: any key starting with "{disease_type}_" indicates affected status
+// Condition schema per Bennett 2008 NSGC standard (free text)
+const ConditionSchema = z.object({
+  name: z.string().describe('Condition/disease name (free text): "Breast cancer", "Huntington\'s disease", "Type 2 diabetes"'),
+  age: z.number().optional().describe('Age at diagnosis/onset'),
+});
+
+// Use passthrough() to allow arbitrary gene test properties
 const IndividualSchema = z
   .object({
     name: z.string().max(7, 'name exceeds 7 char limit').describe('Unique identifier (max 7 chars)'),
@@ -25,16 +30,18 @@ const IndividualSchema = z
     age: z.number().optional().describe('Current age'),
     yob: z.number().optional().describe('Year of birth'),
     status: z.number().optional().describe('0=alive, 1=deceased'),
-    mztwin: z.string().optional().describe('Monozygotic twin marker'),
+    mztwin: z.string().optional().describe('Monozygotic twin marker (same value = identical twins)'),
+    dztwin: z.string().optional().describe('Dizygotic twin marker (same value = fraternal twins)'),
     ashkenazi: z.number().optional().describe('0=no, 1=Ashkenazi ancestry'),
-    noparents: z.boolean().optional().describe('Hide parental links'),
-    // Common disease properties (but any {disease_type}_* property works)
-    breast_cancer_diagnosis_age: z.number().optional(),
-    breast_cancer2_diagnosis_age: z.number().optional(),
-    ovarian_cancer_diagnosis_age: z.number().optional(),
-    pancreatic_cancer_diagnosis_age: z.number().optional(),
-    prostate_cancer_diagnosis_age: z.number().optional(),
-    // Gene tests
+    noparents: z.boolean().optional().describe('Hide parental links (adopted)'),
+    // Bennett 2008 standard: conditions as free text
+    conditions: z.array(ConditionSchema).optional().describe('Array of conditions/diseases (free text per Bennett standard)'),
+    // Bennett standard indicators
+    carrier: z.boolean().optional().describe('Carrier status (dot in center)'),
+    pregnant: z.boolean().optional().describe('Pregnancy (P inside symbol)'),
+    terminated: z.boolean().optional().describe('Stillbirth/SAB/termination (small triangle)'),
+    divorced: z.boolean().optional().describe('Divorced/separated (hash marks on partnership line)'),
+    // Gene tests (pattern: {gene}_gene_test)
     brca1_gene_test: GeneTestSchema.optional(),
     brca2_gene_test: GeneTestSchema.optional(),
     palb2_gene_test: GeneTestSchema.optional(),
