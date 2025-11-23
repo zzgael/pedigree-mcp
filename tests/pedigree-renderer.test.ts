@@ -179,7 +179,9 @@ describe('PedigreeRenderer', () => {
         { name: 'gm', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 55 },
       ];
 
-      const renderer = new PedigreeRenderer(dataset);
+      const renderer = new PedigreeRenderer(dataset, {
+        diseases: [{ type: 'breast_cancer', colour: '#F68F35' }],
+      });
       const svg = renderer.renderSvg();
 
       // Breast cancer color is #F68F35
@@ -193,7 +195,12 @@ describe('PedigreeRenderer', () => {
         { name: 'patient', sex: 'F', top_level: true, breast_cancer_diagnosis_age: 55, ovarian_cancer_diagnosis_age: 60 },
       ] as Individual[];
 
-      const renderer = new PedigreeRenderer(dataset);
+      const renderer = new PedigreeRenderer(dataset, {
+        diseases: [
+          { type: 'breast_cancer', colour: '#F68F35' },
+          { type: 'ovarian_cancer', colour: '#4DAA4D' },
+        ],
+      });
       const svg = renderer.renderSvg();
 
       // Breast cancer color
@@ -485,7 +492,13 @@ describe('PedigreeRenderer', () => {
         },
       ] as Individual[];
 
-      const renderer = new PedigreeRenderer(dataset);
+      const renderer = new PedigreeRenderer(dataset, {
+        diseases: [
+          { type: 'breast_cancer', colour: '#F68F35' },
+          { type: 'ovarian_cancer', colour: '#4DAA4D' },
+          { type: 'pancreatic_cancer', colour: '#4289BA' },
+        ],
+      });
       const svg = renderer.renderSvg();
 
       // Should have multiple disease colors

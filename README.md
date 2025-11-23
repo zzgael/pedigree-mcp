@@ -84,37 +84,51 @@ This implementation follows the [NSGC Standardized Human Pedigree Nomenclature](
 | Small triangle | Stillbirth/SAB/termination | `terminated: true` |
 | Hash marks on line | Divorced/separated | `divorced: true` |
 
-### Disease Markers
+### Disease/Condition Markers
 
-Color-coded disease indicators with customizable colors:
+Supports **any hereditary condition** - not limited to cancer. Configure diseases per your use case:
 
-| Disease | Default Color | Property Prefix |
-|---------|---------------|-----------------|
-| Breast cancer | Orange (#F68F35) | `breast_cancer_*` |
-| Breast cancer 2 | Pink (#FFC0CB) | `breast_cancer2_*` |
-| Ovarian cancer | Green (#4DAA4D) | `ovarian_cancer_*` |
-| Pancreatic cancer | Blue (#4289BA) | `pancreatic_cancer_*` |
-| Prostate cancer | Red (#D5494A) | `prostate_cancer_*` |
+```typescript
+// Pass diseases config when generating pedigree
+diseases: [
+  { type: 'huntington', colour: '#6A5ACD' },
+  { type: 'cardiomyopathy', colour: '#DC143C' },
+  { type: 'cystic_fibrosis', colour: '#228B22' },
+]
+```
+
+**Built-in presets available:**
+
+| Preset | Conditions |
+|--------|------------|
+| `cancer` | breast, ovarian, colorectal, pancreatic, prostate |
+| `cardiac` | cardiomyopathy, long_qt, marfan, sudden_death |
+| `neurological` | huntington, alzheimer, parkinson, als |
+| `hematological` | sickle_cell, hemophilia, thalassemia |
+
+**Property patterns:**
+- `{condition}_diagnosis_age: number` - Age at diagnosis (e.g., `huntington_diagnosis_age: 45`)
+- `{condition}_affected: boolean` - Affected status without age (e.g., `cystic_fibrosis_affected: true`)
 
 Multiple diseases show as quadrants (male) or pie slices (female).
 
 ### Genetic Testing Results
 
-Support for common hereditary cancer genes:
+Supports **any gene** - use pattern `{gene}_gene_test`:
 
-| Gene | Property | Format |
-|------|----------|--------|
-| BRCA1 | `brca1_gene_test` | `{type: "T", result: "P"}` |
-| BRCA2 | `brca2_gene_test` | `{type: "T", result: "N"}` |
-| PALB2 | `palb2_gene_test` | `{type: "T", result: "-"}` |
-| ATM | `atm_gene_test` | `{type: "S", result: "P"}` |
-| CHEK2 | `chek2_gene_test` | `{type: "S", result: "N"}` |
+```json
+{
+  "brca1_gene_test": { "type": "T", "result": "P" },
+  "htt_gene_test": { "type": "T", "result": "P" },
+  "apoe_gene_test": { "type": "S", "result": "N" }
+}
+```
 
 Gene test result codes:
 - **type**: `T` (tested), `S` (screening), `-` (unknown)
 - **result**: `P` (positive), `N` (negative), `-` (unknown/VUS)
 
-Labels appear as: `BRCA1+` (positive), `BRCA2-` (negative), `ATM?` (unknown)
+Labels appear as: `BRCA1+` (positive), `HTT-` (negative), `APOE?` (unknown)
 
 ## Tools
 
