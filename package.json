@@ -1,13 +1,17 @@
 {
   "name": "pedigree-mcp",
   "version": "1.0.0",
-  "description": "MCP server for generating pedigree tree diagrams as PNG images",
+  "description": "MCP server for generating pedigree tree diagrams as PNG images using Bennett 2008 NSGC standard",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "pedigree-mcp": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
+    "prepare": "npm run build",
     "test": "vitest run",
     "test:unit": "vitest run tests/pedigree-renderer.test.ts tests/generate-pedigree.test.ts tests/get-documentation.test.ts",
     "test:integration": "vitest run tests/mcp-server.integration.test.ts",
