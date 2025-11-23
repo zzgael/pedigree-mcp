@@ -142,10 +142,12 @@ server.tool(
             .default('#ffffff')
             .describe('Background color'),
         labels: z
-            .array(z.string())
+            .array(z.enum(['age', 'yob']))
             .optional()
             .default(['age'])
-            .describe('Attributes to show under symbols'),
+            .describe(
+                'Which demographics to show: age, yob, or both. Condition and gene test labels are always shown automatically.',
+            ),
     },
     async params => {
         const result = await generatePedigree({

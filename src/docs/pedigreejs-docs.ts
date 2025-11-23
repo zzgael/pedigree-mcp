@@ -65,7 +65,9 @@ Labels shown as: "BRCA1+", "BRCA2-"
 
 ## Options
 
-\`width\` (800), \`height\` (600), \`symbol_size\` (35), \`background\` (#ffffff), \`labels\` (['age'])
+\`width\` (800), \`height\` (600), \`symbol_size\` (35), \`background\` (#ffffff)
+
+\`labels\`: Controls age/yob display only. Values: \`['age']\`, \`['yob']\`, \`['age','yob']\`, or \`[]\`. Condition and gene test labels are always shown automatically.
 
 ## Example
 
