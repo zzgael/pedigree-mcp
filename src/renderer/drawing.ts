@@ -127,22 +127,29 @@ export function drawDeceasedIndicator(
 
 /**
  * Draw proband indicator (arrow pointing to symbol)
+ * Bennett standard: arrow pointing to the proband from bottom-left
  */
 export function drawProbandIndicator(
     g: GroupSelection,
     symbolSize: number,
 ): void {
-    const arrowSize = 10;
-    const offset = symbolSize / 2 + 15;
+    const arrowSize = 8;
+    // Position arrow further left to avoid text collision
+    const xOffset = symbolSize / 2 + 25;
+    const yOffset = symbolSize / 2 + 8;
+
+    // Arrow head pointing toward symbol (upper-right direction)
     g.append('polygon')
         .attr(
             'points',
-            `${-offset},${offset} ${-offset + arrowSize},${offset - arrowSize / 2} ${-offset + arrowSize / 2},${offset - arrowSize}`,
+            `${-xOffset},${yOffset} ${-xOffset + arrowSize},${yOffset - arrowSize / 2} ${-xOffset + arrowSize / 2},${yOffset - arrowSize}`,
         )
         .attr('fill', '#333');
+
+    // Line from arrow head to symbol corner
     g.append('line')
-        .attr('x1', -offset)
-        .attr('y1', offset)
+        .attr('x1', -xOffset)
+        .attr('y1', yOffset)
         .attr('x2', -symbolSize / 2 - 3)
         .attr('y2', symbolSize / 2 + 3)
         .attr('stroke', '#333')
