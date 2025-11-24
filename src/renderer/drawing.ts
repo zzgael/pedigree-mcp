@@ -165,7 +165,10 @@ export function drawProbandIndicator(
     };
 
     g.append('polygon')
-        .attr('points', `${tip.x},${tip.y} ${left.x},${left.y} ${right.x},${right.y}`)
+        .attr(
+            'points',
+            `${tip.x},${tip.y} ${left.x},${left.y} ${right.x},${right.y}`,
+        )
         .attr('fill', '#333');
 }
 

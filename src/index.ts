@@ -37,10 +37,22 @@ const IndividualSchema = z
         top_level: z
             .boolean()
             .optional()
-            .describe('ONLY for founders with NO known parents. Siblings without partners still need mother/father refs.'),
+            .describe(
+                'ONLY for founders with NO known parents. Siblings without partners still need mother/father refs.',
+            ),
         proband: z.boolean().optional().describe('True for the index case'),
-        mother: z.string().optional().describe('Reference to mother name. Siblings share same mother/father.'),
-        father: z.string().optional().describe('Reference to father name. Siblings share same mother/father.'),
+        mother: z
+            .string()
+            .optional()
+            .describe(
+                'Reference to mother name. Siblings share same mother/father.',
+            ),
+        father: z
+            .string()
+            .optional()
+            .describe(
+                'Reference to father name. Siblings share same mother/father.',
+            ),
         age: z.number().optional().describe('Current age'),
         yob: z.number().optional().describe('Year of birth'),
         status: z.number().optional().describe('0=alive, 1=deceased'),
@@ -56,7 +68,9 @@ const IndividualSchema = z
         noparents: z
             .boolean()
             .optional()
-            .describe('Shows adoption brackets [ ]. Use for adopted individuals.'),
+            .describe(
+                'Shows adoption brackets [ ]. Use for adopted individuals.',
+            ),
         // Bennett 2008 standard: conditions as free text
         conditions: z
             .array(ConditionSchema)
@@ -76,7 +90,9 @@ const IndividualSchema = z
         terminated: z
             .boolean()
             .optional()
-            .describe('PREGNANCY LOSS ONLY (stillbirth/miscarriage). Shows small triangle. NEVER use for living individuals!'),
+            .describe(
+                'PREGNANCY LOSS ONLY (stillbirth/miscarriage). Shows small triangle. NEVER use for living individuals!',
+            ),
         divorced: z
             .boolean()
             .optional()

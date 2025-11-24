@@ -575,9 +575,21 @@ describe('PedigreeRenderer', () => {
                 { name: 'gm', sex: 'F', top_level: true },
                 // Two siblings: f has partner/children, aunt has no partner
                 { name: 'f', sex: 'M', mother: 'gm', father: 'gf' },
-                { name: 'aunt', sex: 'F', mother: 'gm', father: 'gf', pregnant: true },
+                {
+                    name: 'aunt',
+                    sex: 'F',
+                    mother: 'gm',
+                    father: 'gf',
+                    pregnant: true,
+                },
                 { name: 'm', sex: 'F', top_level: true }, // married into family
-                { name: 'child', sex: 'F', mother: 'm', father: 'f', proband: true },
+                {
+                    name: 'child',
+                    sex: 'F',
+                    mother: 'm',
+                    father: 'f',
+                    proband: true,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset);
@@ -588,10 +600,16 @@ describe('PedigreeRenderer', () => {
             expect(svg).toContain('>aunt<');
 
             // Extract Y positions for f and aunt - they should be in same generation
-            const transforms = svg.match(/<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g) || [];
+            const transforms =
+                svg.match(
+                    /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g,
+                ) || [];
             const positions = transforms.map(m => {
                 const coords = m.match(/translate\(([^,]+),\s*([^)]+)\)/);
-                return { x: parseFloat(coords?.[1] || '0'), y: parseFloat(coords?.[2] || '0') };
+                return {
+                    x: parseFloat(coords?.[1] || '0'),
+                    y: parseFloat(coords?.[2] || '0'),
+                };
             });
 
             // Group by Y (generation)
@@ -612,7 +630,10 @@ describe('PedigreeRenderer', () => {
 
             // Sibship line should span from f to aunt
             // Check that there's a horizontal line at sibship Y level
-            const lineMatches = svg.match(/<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g) || [];
+            const lineMatches =
+                svg.match(
+                    /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g,
+                ) || [];
             const horizontalLines = lineMatches.filter(l => {
                 const y1 = l.match(/y1="([^"]*)"/)?.[1];
                 const y2 = l.match(/y2="([^"]*)"/)?.[1];
