@@ -567,6 +567,61 @@ describe('PedigreeRenderer', () => {
     });
 
     describe('edge cases', () => {
+        it('should connect siblings without partners to sibship line', () => {
+            // Regression test: siblings without partners must still be connected
+            // via mother/father references, NOT top_level: true
+            const dataset: Individual[] = [
+                { name: 'gf', sex: 'M', top_level: true },
+                { name: 'gm', sex: 'F', top_level: true },
+                // Two siblings: f has partner/children, aunt has no partner
+                { name: 'f', sex: 'M', mother: 'gm', father: 'gf' },
+                { name: 'aunt', sex: 'F', mother: 'gm', father: 'gf', pregnant: true },
+                { name: 'm', sex: 'F', top_level: true }, // married into family
+                { name: 'child', sex: 'F', mother: 'm', father: 'f', proband: true },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset);
+            const svg = renderer.renderSvg();
+
+            // Both siblings should be present
+            expect(svg).toContain('>f<');
+            expect(svg).toContain('>aunt<');
+
+            // Extract Y positions for f and aunt - they should be in same generation
+            const transforms = svg.match(/<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g) || [];
+            const positions = transforms.map(m => {
+                const coords = m.match(/translate\(([^,]+),\s*([^)]+)\)/);
+                return { x: parseFloat(coords?.[1] || '0'), y: parseFloat(coords?.[2] || '0') };
+            });
+
+            // Group by Y (generation)
+            const byY = new Map<number, number[]>();
+            for (const pos of positions) {
+                const roundedY = Math.round(pos.y / 50) * 50; // Round to nearest 50
+                if (!byY.has(roundedY)) byY.set(roundedY, []);
+                byY.get(roundedY)!.push(pos.x);
+            }
+
+            // Should have 3 generations (0: gf/gm, 1: f/aunt/m, 2: child)
+            const generations = Array.from(byY.keys()).sort((a, b) => a - b);
+            expect(generations.length).toBe(3);
+
+            // Generation 1 (middle) should have 3 individuals (f, aunt, m)
+            const gen1Count = byY.get(generations[1])!.length;
+            expect(gen1Count).toBe(3);
+
+            // Sibship line should span from f to aunt
+            // Check that there's a horizontal line at sibship Y level
+            const lineMatches = svg.match(/<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g) || [];
+            const horizontalLines = lineMatches.filter(l => {
+                const y1 = l.match(/y1="([^"]*)"/)?.[1];
+                const y2 = l.match(/y2="([^"]*)"/)?.[1];
+                return y1 === y2 && parseFloat(y1 || '0') > 100; // Horizontal, not at top
+            });
+            // Should have sibship line connecting siblings
+            expect(horizontalLines.length).toBeGreaterThanOrEqual(1);
+        });
+
         it('should handle deep pedigree (5 generations)', () => {
             const dataset: Individual[] = [
                 // Gen 0: Great-great-grandparents

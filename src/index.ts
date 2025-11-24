@@ -37,10 +37,10 @@ const IndividualSchema = z
         top_level: z
             .boolean()
             .optional()
-            .describe('True for founding individuals'),
+            .describe('ONLY for founders with NO known parents. Siblings without partners still need mother/father refs.'),
         proband: z.boolean().optional().describe('True for the index case'),
-        mother: z.string().optional().describe('Reference to mother name'),
-        father: z.string().optional().describe('Reference to father name'),
+        mother: z.string().optional().describe('Reference to mother name. Siblings share same mother/father.'),
+        father: z.string().optional().describe('Reference to father name. Siblings share same mother/father.'),
         age: z.number().optional().describe('Current age'),
         yob: z.number().optional().describe('Year of birth'),
         status: z.number().optional().describe('0=alive, 1=deceased'),
@@ -56,13 +56,13 @@ const IndividualSchema = z
         noparents: z
             .boolean()
             .optional()
-            .describe('Hide parental links (adopted)'),
+            .describe('Shows adoption brackets [ ]. Use for adopted individuals.'),
         // Bennett 2008 standard: conditions as free text
         conditions: z
             .array(ConditionSchema)
             .optional()
             .describe(
-                'Array of conditions/diseases (free text per Bennett standard)',
+                'ONLY way to get colored fills. Array of conditions/diseases (free text). Gene tests alone do NOT color symbols.',
             ),
         // Bennett standard indicators
         carrier: z
@@ -116,7 +116,7 @@ server.tool(
 // Tool 2: Generate Pedigree
 server.tool(
     'generate_pedigree',
-    'Generates a PNG image of a family pedigree tree. Requires reading documentation first via get_pedigree_documentation to understand the dataset format.',
+    'Generates a PNG pedigree tree (Bennett 2008 standard). IMPORTANT: Use mother/father for ALL individuals with known parents - siblings share same parents. Only use top_level:true for founders with NO known parents.',
     {
         dataset: z
             .array(IndividualSchema)

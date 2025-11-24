@@ -8,7 +8,12 @@ Generates PNG pedigree trees following Bennett 2008 NSGC standard notation.
 
 **Required:** \`name\` (unique ID), \`sex\` (M/F/U)
 
-**Family:** \`mother\`, \`father\` (refs to existing individuals), \`top_level\` (true for founders)
+**Family Connections:**
+- \`mother\`, \`father\` - References to existing individuals. **Siblings share the same mother AND father.**
+- \`top_level: true\` - ONLY for founders with NO known parents (e.g., grandparents at top of tree)
+
+⚠️ **CRITICAL:** If an individual has parents in the pedigree, use \`mother\`/\`father\` - NOT \`top_level: true\`.
+Siblings without partners still need \`mother\`/\`father\` to connect them to the family tree.
 
 **Display:** \`display_name\`, \`proband\` (index case), \`age\`, \`yob\`, \`status\` (0=alive, 1=deceased)
 
@@ -92,10 +97,14 @@ Labels shown as: "BRCA1+", "BRCA2-"
   {"name":"gf","sex":"M","top_level":true,"conditions":[{"name":"Heart disease","age":72}]},
   {"name":"gm","sex":"F","top_level":true,"status":1,"conditions":[{"name":"Breast cancer","age":67},{"name":"Ovarian cancer","age":63}]},
   {"name":"f","sex":"M","mother":"gm","father":"gf","age":56,"carrier":true},
-  {"name":"m","sex":"F","conditions":[{"name":"Breast cancer","age":55}],"age":63,"brca1_gene_test":{"type":"T","result":"P"}},
+  {"name":"aunt","sex":"F","mother":"gm","father":"gf","age":58,"pregnant":true},
+  {"name":"m","sex":"F","top_level":true,"conditions":[{"name":"Breast cancer","age":55}],"age":63,"brca1_gene_test":{"type":"T","result":"P"}},
   {"name":"ana","display_name":"Ana","sex":"F","mother":"m","father":"f","proband":true,"age":25,"yob":1996}
 ]
 \`\`\`
+
+Note: \`aunt\` has same parents as \`f\` (siblings) but no partner - she's still connected via \`mother\`/\`father\`.
+\`m\` uses \`top_level:true\` because her parents aren't in the pedigree (married into family).
 
 ## Validation
 
