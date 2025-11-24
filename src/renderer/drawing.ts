@@ -133,27 +133,40 @@ export function drawProbandIndicator(
     g: GroupSelection,
     symbolSize: number,
 ): void {
-    const arrowSize = 8;
-    // Position arrow further left to avoid text collision
-    const xOffset = symbolSize / 2 + 25;
-    const yOffset = symbolSize / 2 + 8;
+    // Arrow starts from bottom-left, points toward symbol
+    const startX = -symbolSize / 2 - 20;
+    const startY = symbolSize / 2 + 20;
+    const endX = -symbolSize / 2 - 3;
+    const endY = symbolSize / 2 + 3;
 
-    // Arrow head pointing toward symbol (upper-right direction)
-    g.append('polygon')
-        .attr(
-            'points',
-            `${-xOffset},${yOffset} ${-xOffset + arrowSize},${yOffset - arrowSize / 2} ${-xOffset + arrowSize / 2},${yOffset - arrowSize}`,
-        )
-        .attr('fill', '#333');
-
-    // Line from arrow head to symbol corner
+    // Draw the line first
     g.append('line')
-        .attr('x1', -xOffset)
-        .attr('y1', yOffset)
-        .attr('x2', -symbolSize / 2 - 3)
-        .attr('y2', symbolSize / 2 + 3)
+        .attr('x1', startX)
+        .attr('y1', startY)
+        .attr('x2', endX)
+        .attr('y2', endY)
         .attr('stroke', '#333')
         .attr('stroke-width', 2);
+
+    // Arrowhead at the end (pointing toward symbol)
+    const angle = Math.atan2(endY - startY, endX - startX);
+    const arrowLength = 8;
+    const arrowWidth = 6;
+
+    // Calculate arrowhead points
+    const tip = { x: endX, y: endY };
+    const left = {
+        x: endX - arrowLength * Math.cos(angle) - arrowWidth * Math.sin(angle),
+        y: endY - arrowLength * Math.sin(angle) + arrowWidth * Math.cos(angle),
+    };
+    const right = {
+        x: endX - arrowLength * Math.cos(angle) + arrowWidth * Math.sin(angle),
+        y: endY - arrowLength * Math.sin(angle) - arrowWidth * Math.cos(angle),
+    };
+
+    g.append('polygon')
+        .attr('points', `${tip.x},${tip.y} ${left.x},${left.y} ${right.x},${right.y}`)
+        .attr('fill', '#333');
 }
 
 /**

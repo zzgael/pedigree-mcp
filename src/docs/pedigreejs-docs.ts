@@ -12,8 +12,10 @@ Generates PNG pedigree trees following Bennett 2008 NSGC standard notation.
 - \`mother\`, \`father\` - References to existing individuals. **Siblings share the same mother AND father.**
 - \`top_level: true\` - ONLY for founders with NO known parents (e.g., grandparents at top of tree)
 
-⚠️ **CRITICAL:** If an individual has parents in the pedigree, use \`mother\`/\`father\` - NOT \`top_level: true\`.
-Siblings without partners still need \`mother\`/\`father\` to connect them to the family tree.
+⚠️ **CRITICAL RULES:**
+1. If an individual has parents in the pedigree, use \`mother\`/\`father\` - NOT \`top_level: true\`
+2. Siblings without partners still need \`mother\`/\`father\` to connect them to the family tree
+3. Married-in spouses (spouse's parents not shown) use \`top_level: true\` - they connect via having children together
 
 **Display:** \`display_name\`, \`proband\` (index case), \`age\`, \`yob\`, \`status\` (0=alive, 1=deceased)
 
@@ -44,7 +46,7 @@ Use \`conditions\` array with any disease/condition name:
 
 - \`carrier: true\` - Dot in center (obligate/carrier status)
 - \`pregnant: true\` - "P" inside symbol
-- \`terminated: true\` - Small triangle (stillbirth/SAB/termination)
+- \`terminated: true\` - Small triangle for PREGNANCY LOSS ONLY (stillbirth/miscarriage/termination). ⚠️ NEVER use for living individuals!
 - \`divorced: true\` - Hash marks on partnership line
 
 ## Gene Tests (Labels Only - NO Color Fill)

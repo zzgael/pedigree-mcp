@@ -76,7 +76,7 @@ const IndividualSchema = z
         terminated: z
             .boolean()
             .optional()
-            .describe('Stillbirth/SAB/termination (small triangle)'),
+            .describe('PREGNANCY LOSS ONLY (stillbirth/miscarriage). Shows small triangle. NEVER use for living individuals!'),
         divorced: z
             .boolean()
             .optional()
