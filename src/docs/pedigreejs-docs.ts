@@ -14,7 +14,9 @@ Generates PNG pedigree trees following Bennett 2008 NSGC standard notation.
 
 **Special:** \`noparents\` (adopted, shows brackets), \`mztwin\`/\`dztwin\` (same value=twins), \`ashkenazi\` (0/1)
 
-## Conditions (Bennett Standard - FREE TEXT)
+## Conditions (Bennett Standard - FREE TEXT) → COLORED FILLS
+
+⚠️ **Only \`conditions\` array entries trigger colored symbol fills.** Gene tests alone do NOT color the symbol.
 
 Use \`conditions\` array with any disease/condition name:
 
@@ -31,7 +33,7 @@ Use \`conditions\` array with any disease/condition name:
 - \`{ "name": "Cystic fibrosis" }\`
 - \`{ "name": "Hereditary hemochromatosis", "age": 38 }\`
 
-**Colors are auto-assigned** from palette based on unique condition names.
+**Colors are auto-assigned** from palette based on unique condition names. Multiple conditions = pie chart slices.
 
 ## Bennett Standard Indicators
 
@@ -40,7 +42,21 @@ Use \`conditions\` array with any disease/condition name:
 - \`terminated: true\` - Small triangle (stillbirth/SAB/termination)
 - \`divorced: true\` - Hash marks on partnership line
 
-## Gene Tests
+## Gene Tests (Labels Only - NO Color Fill)
+
+⚠️ **Gene tests only add text labels (e.g., "BRCA1+"), NOT colored fills.**
+
+To show both a gene test label AND a colored condition fill, use BOTH properties:
+
+\`\`\`json
+{
+  "name": "mom",
+  "sex": "F",
+  "conditions": [{ "name": "Breast cancer", "age": 45 }],
+  "brca1_gene_test": { "type": "T", "result": "P" }
+}
+\`\`\`
+Result: Pink/red fill for breast cancer + "BRCA1+" label below.
 
 Pattern: \`{gene}_gene_test: {type, result}\`
 
