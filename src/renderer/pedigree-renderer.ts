@@ -531,9 +531,13 @@ export class PedigreeRenderer {
         for (const [conditionName] of this.conditionColorMap) {
             const textWidth = conditionName.length * fontSizeNum * 0.55;
             const itemWidth = swatchSize + textGap + textWidth;
-            const itemTotalWidth = itemWidth + (currentRowWidth > 0 ? itemGap : 0);
+            const itemTotalWidth =
+                itemWidth + (currentRowWidth > 0 ? itemGap : 0);
 
-            if (currentRowWidth + itemTotalWidth > maxWidth && currentRowWidth > 0) {
+            if (
+                currentRowWidth + itemTotalWidth > maxWidth &&
+                currentRowWidth > 0
+            ) {
                 rowCount++;
                 currentRowWidth = itemWidth;
             } else {

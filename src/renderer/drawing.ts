@@ -414,7 +414,10 @@ export function drawLegend(
         const itemTotalWidth =
             item.width + (currentRow.length > 0 ? itemGap : 0);
 
-        if (currentRowWidth + itemTotalWidth > maxWidth && currentRow.length > 0) {
+        if (
+            currentRowWidth + itemTotalWidth > maxWidth &&
+            currentRow.length > 0
+        ) {
             rows.push(currentRow);
             currentRow = [item];
             currentRowWidth = item.width;
@@ -464,7 +467,10 @@ export function drawLegend(
 
     const maxRowWidth = Math.max(
         ...rows.map(row =>
-            row.reduce((sum, item, i) => sum + item.width + (i > 0 ? itemGap : 0), 0),
+            row.reduce(
+                (sum, item, i) => sum + item.width + (i > 0 ? itemGap : 0),
+                0,
+            ),
         ),
     );
     const totalHeight = rows.length * rowHeight;
