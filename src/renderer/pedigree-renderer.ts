@@ -31,6 +31,7 @@ import {
     drawPregnancyIndicator,
     drawTerminationSymbol,
     drawDivorcedIndicator,
+    drawLegend,
 } from './drawing.js';
 
 interface NodePosition {
@@ -459,6 +460,7 @@ export class PedigreeRenderer {
         minY: number;
         maxX: number;
         maxY: number;
+        legendY: number;
     } {
         const { symbol_size } = this.options;
         const lineHeight = 14;
@@ -490,12 +492,56 @@ export class PedigreeRenderer {
         }
 
         const padding = 20;
+        const pedigreeMaxY = maxY + padding;
+
+        const legendMargin = 30;
+        let legendY = pedigreeMaxY + legendMargin;
+        let finalMaxY = pedigreeMaxY;
+
+        if (this.conditionColorMap.size > 0) {
+            const legendHeight = this.calculateLegendHeight(
+                maxX - minX + padding * 2,
+            );
+            finalMaxY = legendY + legendHeight + padding;
+        }
+
         return {
             minX: minX - padding,
             minY: minY - padding,
             maxX: maxX + padding,
-            maxY: maxY + padding,
+            maxY: finalMaxY,
+            legendY,
         };
+    }
+
+    private calculateLegendHeight(availableWidth: number): number {
+        if (this.conditionColorMap.size === 0) return 0;
+
+        const { font_size, symbol_size } = this.options;
+        const fontSizeNum = parseInt(font_size, 10) || 12;
+        const swatchSize = symbol_size * 0.5;
+        const textGap = 6;
+        const itemGap = 20;
+        const rowHeight = Math.max(swatchSize, fontSizeNum) + 10;
+        const maxWidth = availableWidth - 40;
+
+        let currentRowWidth = 0;
+        let rowCount = 1;
+
+        for (const [conditionName] of this.conditionColorMap) {
+            const textWidth = conditionName.length * fontSizeNum * 0.55;
+            const itemWidth = swatchSize + textGap + textWidth;
+            const itemTotalWidth = itemWidth + (currentRowWidth > 0 ? itemGap : 0);
+
+            if (currentRowWidth + itemTotalWidth > maxWidth && currentRowWidth > 0) {
+                rowCount++;
+                currentRowWidth = itemWidth;
+            } else {
+                currentRowWidth += itemTotalWidth;
+            }
+        }
+
+        return rowCount * rowHeight;
     }
 
     /**
@@ -551,6 +597,21 @@ export class PedigreeRenderer {
             font_family,
             font_size,
         );
+
+        // Draw legend if conditions exist
+        if (this.conditionColorMap.size > 0) {
+            const centerX = (bounds.minX + bounds.maxX) / 2;
+            drawLegend(
+                svg as any,
+                this.conditionColorMap,
+                centerX,
+                bounds.legendY,
+                font_family,
+                font_size,
+                symbol_size * 0.5,
+                contentWidth - 40,
+            );
+        }
 
         return document.body.innerHTML;
     }

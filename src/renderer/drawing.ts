@@ -374,3 +374,100 @@ export function drawLabel(
         .attr('fill', color)
         .text(text);
 }
+
+/**
+ * Draw condition color legend below the pedigree
+ * Shows color swatches with condition names, centered horizontally
+ */
+export function drawLegend(
+    svg: SVGSelection,
+    conditions: Map<string, string>,
+    centerX: number,
+    startY: number,
+    fontFamily: string,
+    fontSize: string,
+    swatchSize: number,
+    maxWidth: number,
+): { width: number; height: number } {
+    if (conditions.size === 0) {
+        return { width: 0, height: 0 };
+    }
+
+    const fontSizeNum = parseInt(fontSize, 10) || 12;
+    const textGap = 6;
+    const itemGap = 20;
+    const rowHeight = Math.max(swatchSize, fontSizeNum) + 10;
+
+    const items: Array<{ name: string; color: string; width: number }> = [];
+    for (const [name, color] of conditions) {
+        const textWidth = name.length * fontSizeNum * 0.55;
+        const itemWidth = swatchSize + textGap + textWidth;
+        items.push({ name, color, width: itemWidth });
+    }
+
+    const rows: Array<Array<{ name: string; color: string; width: number }>> =
+        [];
+    let currentRow: typeof items = [];
+    let currentRowWidth = 0;
+
+    for (const item of items) {
+        const itemTotalWidth =
+            item.width + (currentRow.length > 0 ? itemGap : 0);
+
+        if (currentRowWidth + itemTotalWidth > maxWidth && currentRow.length > 0) {
+            rows.push(currentRow);
+            currentRow = [item];
+            currentRowWidth = item.width;
+        } else {
+            currentRow.push(item);
+            currentRowWidth += itemTotalWidth;
+        }
+    }
+    if (currentRow.length > 0) {
+        rows.push(currentRow);
+    }
+
+    let y = startY;
+    for (const row of rows) {
+        const rowWidth = row.reduce(
+            (sum, item, i) => sum + item.width + (i > 0 ? itemGap : 0),
+            0,
+        );
+        let x = centerX - rowWidth / 2;
+
+        for (let i = 0; i < row.length; i++) {
+            const item = row[i];
+            if (i > 0) x += itemGap;
+
+            svg.append('rect')
+                .attr('x', x)
+                .attr('y', y)
+                .attr('width', swatchSize)
+                .attr('height', swatchSize)
+                .attr('fill', item.color)
+                .attr('stroke', '#333')
+                .attr('stroke-width', 1);
+
+            svg.append('text')
+                .attr('x', x + swatchSize + textGap)
+                .attr('y', y + swatchSize / 2 + fontSizeNum * 0.35)
+                .attr('font-family', fontFamily)
+                .attr('font-size', fontSize)
+                .attr('fill', '#333')
+                .attr('text-anchor', 'start')
+                .text(item.name);
+
+            x += item.width;
+        }
+        y += rowHeight;
+    }
+
+    const maxRowWidth = Math.max(
+        ...rows.map(row =>
+            row.reduce((sum, item, i) => sum + item.width + (i > 0 ? itemGap : 0), 0),
+        ),
+    );
+    const totalHeight = rows.length * rowHeight;
+
+    return { width: maxRowWidth, height: totalHeight };
+}

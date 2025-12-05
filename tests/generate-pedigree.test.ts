@@ -142,4 +142,87 @@ describe('generatePedigree tool', () => {
             );
         });
     });
+
+    describe('condition legend', () => {
+        it('should generate pedigree without legend when no conditions exist', async () => {
+            const dataset: Individual[] = [
+                { name: 'p', sex: 'M', top_level: true },
+            ];
+            const result = await generatePedigree({ dataset });
+            expect(result.metadata.individual_count).toBe(1);
+            const buffer = Buffer.from(result.image_base64, 'base64');
+            expect(buffer[0]).toBe(0x89);
+        });
+
+        it('should generate pedigree with legend when conditions exist', async () => {
+            const dataset: Individual[] = [
+                {
+                    name: 'p',
+                    sex: 'M',
+                    top_level: true,
+                    conditions: [{ name: 'Diabetes' }],
+                },
+            ];
+            const result = await generatePedigree({ dataset });
+            expect(result.metadata.individual_count).toBe(1);
+            const buffer = Buffer.from(result.image_base64, 'base64');
+            expect(buffer.length).toBeGreaterThan(1000);
+        });
+
+        it('should handle multiple conditions with different colors', async () => {
+            const dataset: Individual[] = [
+                {
+                    name: 'gf',
+                    sex: 'M',
+                    top_level: true,
+                    conditions: [{ name: 'Huntington' }],
+                },
+                {
+                    name: 'gm',
+                    sex: 'F',
+                    top_level: true,
+                    conditions: [{ name: 'Breast cancer' }],
+                },
+                {
+                    name: 'p',
+                    sex: 'F',
+                    mother: 'gm',
+                    father: 'gf',
+                    conditions: [
+                        { name: 'Huntington' },
+                        { name: 'Breast cancer' },
+                    ],
+                },
+            ];
+            const result = await generatePedigree({ dataset });
+            expect(result.metadata.individual_count).toBe(3);
+            const buffer = Buffer.from(result.image_base64, 'base64');
+            expect(buffer[0]).toBe(0x89);
+        });
+
+        it('should wrap legend to multiple rows when many conditions', async () => {
+            const conditions = [
+                'Alzheimer disease',
+                'Breast cancer',
+                'Colon cancer',
+                'Diabetes type 2',
+                'Epilepsy',
+                'Fragile X syndrome',
+                'Glaucoma',
+                'Hemophilia A',
+                'Inflammatory bowel disease',
+            ];
+            const dataset: Individual[] = conditions.map((name, i) => ({
+                name: `p${i}`,
+                sex: (i % 2 === 0 ? 'M' : 'F') as 'M' | 'F',
+                top_level: true,
+                conditions: [{ name }],
+            }));
+
+            const result = await generatePedigree({ dataset, width: 600 });
+            expect(result.image_base64).toBeDefined();
+            const buffer = Buffer.from(result.image_base64, 'base64');
+            expect(buffer[0]).toBe(0x89);
+        });
+    });
 });

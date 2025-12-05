@@ -231,6 +231,51 @@ describe('Pedigree MCP Server Integration', () => {
             expect(textContent?.text).toContain('error');
         });
 
+        it('should generate PNG with condition legend', async () => {
+            const result = await client.callTool({
+                name: 'generate_pedigree',
+                arguments: {
+                    dataset: [
+                        {
+                            name: 'gf',
+                            sex: 'M',
+                            top_level: true,
+                            conditions: [{ name: 'Huntington disease' }],
+                        },
+                        {
+                            name: 'gm',
+                            sex: 'F',
+                            top_level: true,
+                            conditions: [{ name: 'Breast cancer', age: 55 }],
+                        },
+                        {
+                            name: 'p',
+                            sex: 'F',
+                            mother: 'gm',
+                            father: 'gf',
+                            proband: true,
+                            conditions: [
+                                { name: 'Huntington disease' },
+                                { name: 'Breast cancer', age: 42 },
+                            ],
+                        },
+                    ],
+                },
+            });
+
+            expect(result.content).toBeDefined();
+
+            const imageContent = result.content.find(
+                (c: any) => c.type === 'image',
+            );
+            expect(imageContent).toBeDefined();
+            expect(imageContent?.mimeType).toBe('image/png');
+
+            // Legend should be included (larger image due to legend space)
+            const buffer = Buffer.from(imageContent?.data as string, 'base64');
+            expect(buffer.length).toBeGreaterThan(5000);
+        }, 30000);
+
         it('should handle complex multi-generation pedigree', async () => {
             const result = await client.callTool({
                 name: 'generate_pedigree',
