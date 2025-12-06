@@ -370,6 +370,62 @@ export function drawGeneCopyNumberLabel(
 }
 
 /**
+ * Draw gender identity marker (Bennett 2022)
+ * Shows gender identity when different from sex assigned at birth
+ */
+export function drawGenderIdentityMarker(
+    g: GroupSelection,
+    gender: 'M' | 'F' | 'NB' | 'GNC' | 'TM' | 'TF',
+    symbolSize: number,
+    fontFamily: string,
+): void {
+    const labels = {
+        M: '♂', // Male symbol (when SAAB is F)
+        F: '♀', // Female symbol (when SAAB is M)
+        NB: 'NB', // Non-binary
+        GNC: 'GNC', // Gender non-conforming
+        TM: 'TM', // Trans male
+        TF: 'TF', // Trans female
+    };
+
+    const offset = symbolSize * 0.6;
+    g.append('text')
+        .attr('x', -offset)
+        .attr('y', offset + 5)
+        .attr('text-anchor', 'start')
+        .attr('font-family', fontFamily)
+        .attr('font-size', '9px')
+        .attr('font-weight', 'bold')
+        .attr('fill', '#9370DB') // Purple for gender identity
+        .text(labels[gender]);
+}
+
+/**
+ * Draw generation number (Bennett numbering system)
+ * Roman numerals I, II, III, IV, etc. for generation levels
+ */
+export function drawGenerationNumber(
+    svg: SVGSelection,
+    generation: number,
+    y: number,
+    minX: number,
+    fontFamily: string,
+): void {
+    const romanNumerals = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+    const label = generation <= 10 ? romanNumerals[generation] : String(generation);
+
+    svg.append('text')
+        .attr('x', minX - 40) // Position to left of pedigree
+        .attr('y', y + 5) // Vertically align with generation
+        .attr('text-anchor', 'end')
+        .attr('font-family', fontFamily)
+        .attr('font-size', '14px')
+        .attr('font-weight', 'bold')
+        .attr('fill', '#666')
+        .text(label);
+}
+
+/**
  * Draw partnership line between two partners
  * Supports consanguineous (double line) and unmarried (dashed line) partnerships
  */

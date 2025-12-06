@@ -3,6 +3,7 @@ import {
     getAncestors,
     isConsanguineous,
     getTwins,
+    getDzTwins,
 } from '../src/renderer/utils.js';
 import type { Individual } from '../src/types.js';
 
@@ -271,6 +272,107 @@ describe('utils', () => {
             const twins = getTwins(dataset[4], dataset);
 
             // t2 has different parents, so not a twin
+            expect(twins).toHaveLength(0);
+        });
+    });
+
+    describe('getDzTwins', () => {
+        it('should return empty array for non-twin', () => {
+            const dataset: Individual[] = [
+                { name: 'f', sex: 'M', top_level: true },
+                { name: 'm', sex: 'F', top_level: true },
+                { name: 'child', sex: 'F', mother: 'm', father: 'f' },
+            ];
+
+            const twins = getDzTwins(dataset[2], dataset);
+
+            expect(twins).toHaveLength(0);
+        });
+
+        it('should return DZ twin sibling', () => {
+            const dataset: Individual[] = [
+                { name: 'f', sex: 'M', top_level: true },
+                { name: 'm', sex: 'F', top_level: true },
+                {
+                    name: 't1',
+                    sex: 'F',
+                    mother: 'm',
+                    father: 'f',
+                    dztwin: 'twins',
+                },
+                {
+                    name: 't2',
+                    sex: 'M',
+                    mother: 'm',
+                    father: 'f',
+                    dztwin: 'twins',
+                },
+            ];
+
+            const twins = getDzTwins(dataset[2], dataset);
+
+            expect(twins).toHaveLength(1);
+            expect(twins[0].name).toBe('t2');
+        });
+
+        it('should return multiple DZ twins (triplets)', () => {
+            const dataset: Individual[] = [
+                { name: 'f', sex: 'M', top_level: true },
+                { name: 'm', sex: 'F', top_level: true },
+                {
+                    name: 't1',
+                    sex: 'F',
+                    mother: 'm',
+                    father: 'f',
+                    dztwin: 'triplets',
+                },
+                {
+                    name: 't2',
+                    sex: 'F',
+                    mother: 'm',
+                    father: 'f',
+                    dztwin: 'triplets',
+                },
+                {
+                    name: 't3',
+                    sex: 'M',
+                    mother: 'm',
+                    father: 'f',
+                    dztwin: 'triplets',
+                },
+            ];
+
+            const twins = getDzTwins(dataset[2], dataset);
+
+            expect(twins).toHaveLength(2);
+            expect(twins.map(t => t.name).sort()).toEqual(['t2', 't3']);
+        });
+
+        it('should not match siblings from different parents with same dztwin value', () => {
+            const dataset: Individual[] = [
+                { name: 'f1', sex: 'M', top_level: true },
+                { name: 'm1', sex: 'F', top_level: true },
+                { name: 'f2', sex: 'M', top_level: true },
+                { name: 'm2', sex: 'F', top_level: true },
+                {
+                    name: 't1',
+                    sex: 'F',
+                    mother: 'm1',
+                    father: 'f1',
+                    dztwin: 'same_marker',
+                },
+                {
+                    name: 't2',
+                    sex: 'F',
+                    mother: 'm2',
+                    father: 'f2',
+                    dztwin: 'same_marker',
+                },
+            ];
+
+            const twins = getDzTwins(dataset[4], dataset);
+
+            // t2 has different parents, so not a DZ twin
             expect(twins).toHaveLength(0);
         });
     });

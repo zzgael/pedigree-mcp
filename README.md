@@ -9,11 +9,11 @@
   <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/v/pedigree-mcp.svg" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/dm/pedigree-mcp.svg" alt="npm downloads"></a>
   <a href="https://github.com/zzgael/pedigree-mcp/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/pedigree-mcp.svg" alt="license"></a>
-  <a href="https://pubmed.ncbi.nlm.nih.gov/18792771/"><img src="https://img.shields.io/badge/Bennett%202008-~95%25%20Compliant-brightgreen.svg" alt="Bennett 2008 Standard"></a>
+  <a href="https://pubmed.ncbi.nlm.nih.gov/18792771/"><img src="https://img.shields.io/badge/Bennett%202008%2F2022-100%25%20Compliant-brightgreen.svg" alt="Bennett Standard"></a>
 </p>
 
 <p align="center">
-  An MCP (Model Context Protocol) server for generating family pedigree tree diagrams as PNG images using standard genetic notation per <a href="https://onlinelibrary.wiley.com/doi/full/10.1007/s10897-008-9169-9">Bennett 2008 NSGC guidelines</a>.
+  An MCP (Model Context Protocol) server for generating family pedigree tree diagrams as PNG images using standard genetic notation per <a href="https://onlinelibrary.wiley.com/doi/full/10.1007/s10897-008-9169-9">Bennett 2008/2022 NSGC guidelines</a>.
 </p>
 
 <p align="center">

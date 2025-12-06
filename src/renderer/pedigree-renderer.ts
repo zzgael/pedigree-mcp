@@ -44,6 +44,8 @@ import {
     drawBirthOrderLabel,
     drawARTIndicator,
     drawGeneCopyNumberLabel,
+    drawGenderIdentityMarker,
+    drawGenerationNumber,
     drawTerminationSymbol,
     drawDivorcedIndicator,
     drawLegend,
@@ -784,6 +786,9 @@ export class PedigreeRenderer {
             font_size,
         );
 
+        // Draw generation numbers (Bennett numbering system)
+        this.drawGenerationNumbers(svg as any, font_family, bounds.minX);
+
         // Draw legend if conditions exist
         if (this.conditionColorMap.size > 0) {
             const centerX = (bounds.minX + bounds.maxX) / 2;
@@ -1110,6 +1115,10 @@ export class PedigreeRenderer {
             if (ind.art_type) {
                 drawARTIndicator(g as any, ind.art_type, symbolSize, fontFamily);
             }
+            // Bennett 2022: Gender identity marker (when different from sex assigned at birth)
+            if (ind.gender && ind.gender !== ind.sex) {
+                drawGenderIdentityMarker(g as any, ind.gender, symbolSize, fontFamily);
+            }
             // Bennett standard: Ashkenazi ancestry indicator (A marker)
             if (ind.ashkenazi === 1) {
                 drawAshkenaziIndicator(g as any, symbolSize, fontFamily, fontSize);
@@ -1197,6 +1206,37 @@ export class PedigreeRenderer {
                     fontFamily,
                     fontSize,
                 );
+            }
+        }
+    }
+
+    /**
+     * Draw generation numbers (Bennett numbering system)
+     * Roman numerals I, II, III, IV, etc. positioned to the left of each generation
+     */
+    private drawGenerationNumbers(
+        svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+        fontFamily: string,
+        minX: number,
+    ): void {
+        // Group positions by generation to find the Y coordinate for each generation
+        const generationYPositions = new Map<number, number>();
+
+        for (const pos of this.nodePositions.values()) {
+            if (!generationYPositions.has(pos.generation)) {
+                generationYPositions.set(pos.generation, pos.y);
+            }
+        }
+
+        // Draw generation number for each unique generation
+        for (const [generation, y] of generationYPositions.entries()) {
+            // Only draw if the generation number is explicitly set on at least one individual
+            const hasExplicitGenNumber = Array.from(this.nodePositions.values()).some(
+                pos => pos.generation === generation && pos.individual.generation !== undefined,
+            );
+
+            if (hasExplicitGenNumber || this.options.labels?.includes('generation')) {
+                drawGenerationNumber(svg as any, generation + 1, y, minX, fontFamily); // +1 because generations are 0-indexed
             }
         }
     }

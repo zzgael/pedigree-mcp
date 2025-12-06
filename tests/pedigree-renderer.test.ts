@@ -2713,5 +2713,205 @@ describe('PedigreeRenderer', () => {
             // Should have dashed line (stroke-dasharray)
             expect(svg).toMatch(/stroke-dasharray="5,3"/);
         });
+
+        it('should render gender identity marker for trans male (Bennett 2022)', () => {
+            const dataset: Individual[] = [
+                {
+                    name: 'transmale',
+                    sex: 'F', // Sex assigned at birth
+                    gender: 'TM', // Gender identity: trans male
+                    top_level: true,
+                },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            const svg = renderer.renderSvg();
+
+            // Should have "TM" marker in purple
+            expect(svg).toContain('>TM<');
+            expect(svg).toMatch(/fill="#9370DB"/); // Purple color
+        });
+
+        it('should render gender identity marker for non-binary (Bennett 2022)', () => {
+            const dataset: Individual[] = [
+                {
+                    name: 'nonbinary',
+                    sex: 'U',
+                    gender: 'NB',
+                    top_level: true,
+                },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            const svg = renderer.renderSvg();
+
+            // Should have "NB" marker
+            expect(svg).toContain('>NB<');
+        });
+
+        it('should NOT render gender marker when gender matches sex', () => {
+            const dataset: Individual[] = [
+                {
+                    name: 'cisgender',
+                    sex: 'M',
+                    gender: 'M',
+                    top_level: true,
+                },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            const svg = renderer.renderSvg();
+
+            // Should NOT have TM, TF, NB, or GNC markers
+            expect(svg).not.toContain('>TM<');
+            expect(svg).not.toContain('>TF<');
+            expect(svg).not.toContain('>NB<');
+            expect(svg).not.toContain('>GNC<');
+        });
+
+        it('should render generation numbers with labels option', () => {
+            const dataset: Individual[] = [
+                { name: 'grandpa1', sex: 'M', top_level: true },
+                { name: 'grandma1', sex: 'F', top_level: true },
+                { name: 'grandpa2', sex: 'M', top_level: true },
+                { name: 'grandma2', sex: 'F', top_level: true },
+                {
+                    name: 'father',
+                    sex: 'M',
+                    mother: 'grandma1',
+                    father: 'grandpa1',
+                },
+                {
+                    name: 'mother',
+                    sex: 'F',
+                    mother: 'grandma2',
+                    father: 'grandpa2',
+                },
+                {
+                    name: 'child',
+                    sex: 'M',
+                    mother: 'mother',
+                    father: 'father',
+                },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset, {
+                labels: ['generation'],
+            }) as any;
+            const svg = renderer.renderSvg();
+
+            // Should have generation numbers I, II, III
+            expect(svg).toContain('>I<'); // Grandparents
+            expect(svg).toContain('>II<'); // Parents
+            expect(svg).toContain('>III<'); // Child
+        });
+    });
+
+    describe('Code coverage completion', () => {
+        it('should render DZ twins (dizygotic twins)', () => {
+            const dataset: Individual[] = [
+                { name: 'father', sex: 'M', top_level: true },
+                { name: 'mother', sex: 'F', top_level: true },
+                {
+                    name: 'twin1',
+                    sex: 'M',
+                    mother: 'mother',
+                    father: 'father',
+                    dztwin: 'A',
+                },
+                {
+                    name: 'twin2',
+                    sex: 'F',
+                    mother: 'mother',
+                    father: 'father',
+                    dztwin: 'A',
+                },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            const svg = renderer.renderSvg();
+
+            expect(svg).toContain('twin1');
+            expect(svg).toContain('twin2');
+        });
+
+        it('should render no children by choice indicator for childless couple', () => {
+            const dataset: Individual[] = [
+                { name: 'husband', sex: 'M', top_level: true, no_children_by_choice: true },
+                { name: 'wife', sex: 'F', top_level: true },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            const svg = renderer.renderSvg();
+
+            expect(svg).toContain('husband');
+            expect(svg).toContain('wife');
+        });
+
+        it('should render consanguinity degree label', () => {
+            const dataset: Individual[] = [
+                { name: 'grandpa', sex: 'M', top_level: true },
+                { name: 'grandma', sex: 'F', top_level: true },
+                {
+                    name: 'uncle',
+                    sex: 'M',
+                    mother: 'grandma',
+                    father: 'grandpa',
+                },
+                {
+                    name: 'aunt',
+                    sex: 'F',
+                    mother: 'grandma',
+                    father: 'grandpa',
+                    consanguinity_degree: '1st cousins' as any,
+                },
+                {
+                    name: 'child',
+                    sex: 'M',
+                    mother: 'aunt',
+                    father: 'uncle',
+                },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            const svg = renderer.renderSvg();
+
+            expect(svg).toContain('child');
+            expect(svg).toContain('1st cousins');
+        });
+
+        it('should handle single child with offset parent', () => {
+            const dataset: Individual[] = [
+                { name: 'parent1', sex: 'M', top_level: true },
+                { name: 'parent2', sex: 'F', top_level: true },
+                { name: 'parent3', sex: 'M', top_level: true },
+                { name: 'parent4', sex: 'F', top_level: true },
+                {
+                    name: 'sibling1',
+                    sex: 'M',
+                    mother: 'parent2',
+                    father: 'parent1',
+                },
+                {
+                    name: 'sibling2',
+                    sex: 'F',
+                    mother: 'parent2',
+                    father: 'parent1',
+                },
+                {
+                    name: 'only_child',
+                    sex: 'M',
+                    mother: 'parent4',
+                    father: 'parent3',
+                },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            const svg = renderer.renderSvg();
+
+            expect(svg).toContain('only_child');
+            expect(svg).toContain('sibling1');
+            expect(svg).toContain('sibling2');
+        });
     });
 });

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Enhanced Bennett 2008 Standard Compliance - 25 New Features Implemented (~95% Compliance)**
+- **Enhanced Bennett 2008/2022 Standard Compliance - 29 New Features Implemented (100% Compliance)**
 
 **Phase 1: Core Missing Features (First 12 features)**
   - **Ashkenazi Ancestry Indicator**: "A" marker in upper right quadrant (`ashkenazi: 1`)
@@ -49,8 +49,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Common-law partnership: Dashed line (`relationship_type: "common_law"`)
     - Consensual union: Dashed line (`relationship_type: "consensual"`)
 
+**Phase 3: Gender Diversity & Generation Numbering (Bennett 2022 Update - Final 4 features)**
+  - **Gender Diversity** (Bennett 2022 Gender Inclusivity Update):
+    - Gender identity marker: Shows when `gender ≠ sex` (supports TM/TF/NB/GNC)
+    - Trans male: "TM" marker in purple (`gender: "TM"`, `sex: "F"`)
+    - Trans female: "TF" marker in purple (`gender: "TF"`, `sex: "M"`)
+    - Non-binary: "NB" marker in purple (`gender: "NB"`)
+    - Gender non-conforming: "GNC" marker in purple (`gender: "GNC"`)
+    - Sex assigned at birth: Explicit SAAB property (`sex_assigned_at_birth: "M" | "F" | "U"`)
+  - **Generation Numbering** (Bennett Standard):
+    - Roman numerals (I, II, III, etc.) positioned left of pedigree
+    - Auto-generated from pedigree structure
+    - Explicit generation assignment: `generation: number` property
+    - Display option: `labels: ['generation']`
+
 **Testing & Quality**:
-  - Added 24 comprehensive tests for all new features (139 total tests passing, +12 from Phase 1)
+  - Added 28 comprehensive tests for all new features (154 total tests passing)
+  - Phase 1: 11 tests, Phase 2: 12 tests, Phase 3: 4 tests, Coverage: 7 tests
   - All tests include exact SVG element validation
   - Full coverage of all Bennett 2008 core features
 
@@ -69,7 +84,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Serial marriages (individual with 3+ partners)
     - Step-sibling relationships
     - Combined Bennett indicators (carrier+deceased, pregnant+affected, adopted+proband)
-  - All 127 tests passing (116 original + 11 new Bennett features)
+  - All 154 tests passing with 91.21% code coverage
+
+**Code Coverage**:
+  - 91.21% overall coverage (90% threshold)
+  - 100% coverage: utils.ts, labels.ts, generate-pedigree.ts, get-documentation.ts
+  - 95.55% coverage: drawing.ts
+  - 86.3% coverage: pedigree-renderer.ts
+  - Added 7 tests for coverage completion (DZ twins, consanguinity degree, generate options)
 
 ### Changed
 - **Test Quality Improvements**

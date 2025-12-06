@@ -20,7 +20,9 @@ export interface Condition {
  */
 export interface Individual {
     name: string;
-    sex: 'M' | 'F' | 'U';
+    sex: 'M' | 'F' | 'U'; // Sex assigned at birth (Bennett 2008)
+    gender?: 'M' | 'F' | 'NB' | 'GNC' | 'TM' | 'TF'; // Gender identity (Bennett 2022): NB=non-binary, GNC=gender non-conforming, TM=trans male, TF=trans female
+    sex_assigned_at_birth?: 'M' | 'F' | 'U'; // Explicit SAAB when gender differs (Bennett 2022)
     display_name?: string;
     top_level?: boolean;
     proband?: boolean;
@@ -28,6 +30,7 @@ export interface Individual {
     father?: string;
     age?: number;
     yob?: number;
+    generation?: number; // Generation number (I, II, III, etc.) - Bennett numbering system
     status?: number; // 0 = alive, 1 = deceased
     mztwin?: string; // MZ twin group identifier
     dztwin?: string; // DZ twin group identifier
