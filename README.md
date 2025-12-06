@@ -9,6 +9,7 @@
   <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/v/pedigree-mcp.svg" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/dm/pedigree-mcp.svg" alt="npm downloads"></a>
   <a href="https://github.com/zzgael/pedigree-mcp/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/pedigree-mcp.svg" alt="license"></a>
+  <a href="https://pubmed.ncbi.nlm.nih.gov/18792771/"><img src="https://img.shields.io/badge/Bennett%202008-~95%25%20Compliant-brightgreen.svg" alt="Bennett 2008 Standard"></a>
 </p>
 
 <p align="center">
@@ -82,14 +83,39 @@ This implementation follows the [NSGC Standardized Human Pedigree Nomenclature](
 | Filled shape | Affected individual | `conditions: [...]` |
 | Diagonal line | Deceased | `status: 1` |
 | Arrow (lower-left) | Proband | `proband: true` |
+| Double arrow (lower-left) | Consultand (person seeking counseling) | `consultand: true` |
 | Brackets [ ] | Adopted | `noparents: true` |
 | Double line | Consanguinity | Auto-detected from shared ancestors |
+| Text on double line | Consanguinity degree | `consanguinity_degree: "1st cousins"` |
 | Horizontal bar | MZ (identical) twins | `mztwin: "group_id"` |
 | Diagonal lines | DZ (fraternal) twins | `dztwin: "group_id"` |
 | Dot in center | Carrier status | `carrier: true` |
+| Outlined dot | Obligate carrier (inferred) | `obligate_carrier: true` |
 | "P" inside symbol | Pregnancy | `pregnant: true` |
-| Small triangle | Stillbirth/SAB/termination | `terminated: true` |
+| "P" + weeks label | Pregnancy duration | `pregnant: true, terminated_age: 12` |
+| Small triangle | Early pregnancy loss (<20 weeks) | `terminated: true, terminated_age: 8` |
+| Large triangle | Stillbirth (≥20 weeks) | `terminated: true, terminated_age: 24` |
+| "EP" below symbol | Ectopic pregnancy | `ectopic: true` |
+| Crossed lines (X) | Infertility | `infertility: true` |
 | Hash marks on line | Divorced/separated | `divorced: true` |
+| Line through offspring | No children by choice | `no_children_by_choice: true` |
+| "A" in upper right | Ashkenazi ancestry | `ashkenazi: 1` |
+| "*" in upper left | Genetic anticipation | `anticipation: true` |
+| "d. XXy" label | Age at death (auto-calculated) | `yob: 1950, yod: 2020, status: 1` |
+| Arrow + "OUT" label | Adopted OUT (placed for adoption) | `adoption_type: "out"` |
+| Dashed brackets | Foster placement (temporary) | `adoption_type: "foster"` |
+| Roman numerals I, II, III | Birth order in sibling group | `birth_order: 1` (displays as "I") |
+| "E" marker (blue) | ART - Egg donor conception | `art_type: "egg_donor"` |
+| "S" marker (blue) | ART - Sperm donor conception | `art_type: "sperm_donor"` |
+| "Em" marker (blue) | ART - Embryo donor conception | `art_type: "embryo_donor"` |
+| "GC" marker (blue) | ART - Gestational carrier (surrogate) | `art_type: "surrogate"` |
+| "SAB" label | Pregnancy outcome - Spontaneous abortion | `pregnancy_outcome: "miscarriage"` |
+| "TOP" label | Pregnancy outcome - Termination of pregnancy | `pregnancy_outcome: "induced_termination"` |
+| "SB" label | Pregnancy outcome - Stillbirth | `pregnancy_outcome: "stillbirth"` |
+| "Het" label (green) | Gene copy number - Heterozygous | `gene_copy_number: "heterozygous"` |
+| "Hom" label (green) | Gene copy number - Homozygous | `gene_copy_number: "homozygous"` |
+| "CH" label (green) | Gene copy number - Compound heterozygous | `gene_copy_number: "compound_heterozygous"` |
+| Dashed partnership line | Unmarried/common-law partnership | `relationship_type: "unmarried"` |
 
 ### Conditions (Bennett Standard - FREE TEXT)
 

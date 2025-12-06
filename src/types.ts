@@ -31,12 +31,31 @@ export interface Individual {
     status?: number; // 0 = alive, 1 = deceased
     mztwin?: string; // MZ twin group identifier
     dztwin?: string; // DZ twin group identifier
-    ashkenazi?: number;
+    ashkenazi?: number; // 0=no, 1=yes (Bennett: A marker)
     noparents?: boolean;
+    adoption_type?: 'in' | 'out' | 'foster'; // Bennett: adoption direction (in=adopted into family, out=placed for adoption, foster=temporary)
+    birth_order?: number; // Bennett: birth order in sibling group (1, 2, 3, etc.) - displayed as Roman numerals
     carrier?: boolean; // Carrier status (Bennett: dot in center)
+    gene_copy_number?: 'heterozygous' | 'homozygous' | 'compound_heterozygous'; // Bennett: gene copy number for carrier testing
     pregnant?: boolean; // Pregnancy (Bennett: P inside symbol)
-    terminated?: boolean; // Stillbirth/SAB/termination (Bennett: small triangle)
+    terminated?: boolean; // Stillbirth/SAB/termination (Bennett: small/large triangle)
+    terminated_age?: number; // Gestational age in weeks (affects triangle size)
+    pregnancy_outcome?:
+        | 'miscarriage'
+        | 'induced_termination'
+        | 'ectopic'
+        | 'stillbirth'
+        | 'unknown'; // Bennett: specific pregnancy outcome type
     divorced?: boolean; // Divorced/separated from partner (Bennett: hash marks)
+    anticipation?: boolean; // Genetic anticipation (Bennett: special marker)
+    ectopic?: boolean; // Ectopic pregnancy (Bennett: distinct marker)
+    consultand?: boolean; // Consultand (vs proband - person seeking counseling)
+    infertility?: boolean; // Infertility (Bennett: crossed-out symbol or marker)
+    no_children_by_choice?: boolean; // No children by choice (Bennett: line through offspring line)
+    yod?: number; // Year of death (to calculate age at death)
+    obligate_carrier?: boolean; // Obligate carrier (inferred from pedigree)
+    art_type?: 'egg_donor' | 'sperm_donor' | 'embryo_donor' | 'surrogate'; // Bennett: Assisted Reproductive Technology conception type
+    relationship_type?: 'married' | 'unmarried' | 'common_law' | 'consensual'; // Bennett: partnership type (applied to one partner)
 
     // Conditions/diseases - FREE TEXT per Bennett standard
     // Examples:
