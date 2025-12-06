@@ -879,7 +879,10 @@ export class PedigreeRenderer {
             throw new Error(`Validation errors: ${errors.join('; ')}`);
         }
 
-        this.calculatePositions();
+        // Only calculate positions if not already done
+        if (this.nodePositions.size === 0) {
+            this.calculatePositions();
+        }
 
         const {
             width,
