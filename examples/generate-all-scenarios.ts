@@ -176,16 +176,51 @@ async function main() {
 
     // 21. Complex Pedigree (Multiple Features)
     await generateScenario('21-complex-pedigree', [
-        { name: 'GF', sex: 'M', top_level: true, status: 1, yob: 1940, yod: 2010, ashkenazi: 1 },
-        { name: 'GM', sex: 'F', top_level: true, status: 1, yob: 1945, yod: 2015 },
-        { name: 'Uncle', sex: 'M', mother: 'GM', father: 'GF', divorced: true, conditions: [{ name: 'Diabetes', age: 50 }] },
-        { name: 'Aunt', sex: 'F', top_level: true },
-        { name: 'Cousin', sex: 'F', mother: 'Aunt', father: 'Uncle', carrier: true, age: 25 },
-        { name: 'Father', sex: 'M', mother: 'GM', father: 'GF', proband: true },
-        { name: 'Mother', sex: 'F', top_level: true, art_type: 'egg_donor' },
-        { name: 'Twin1', sex: 'M', mother: 'Mother', father: 'Father', mztwin: 'A', birth_order: 1, age: 10 },
-        { name: 'Twin2', sex: 'M', mother: 'Mother', father: 'Father', mztwin: 'A', birth_order: 2, age: 10 },
-        { name: 'Youngest', sex: 'F', mother: 'Mother', father: 'Father', birth_order: 3, age: 6 },
+        // Generation 0: Great-grandparents
+        { name: 'GGF1', sex: 'M', top_level: true, status: 1, yob: 1920, yod: 1995 },
+        { name: 'GGM1', sex: 'F', top_level: true, status: 1, yob: 1925, yod: 2000 },
+        { name: 'GGF2', sex: 'M', top_level: true, status: 1, yob: 1918, yod: 1990, ashkenazi: 1 },
+        { name: 'GGM2', sex: 'F', top_level: true, status: 1, yob: 1922, yod: 1998 },
+
+        // Generation 1: Grandparents
+        { name: 'GF', sex: 'M', mother: 'GGM1', father: 'GGF1', status: 1, yob: 1940, yod: 2010, conditions: [{ name: 'Heart Disease', age: 65 }] },
+        { name: 'GM', sex: 'F', mother: 'GGM2', father: 'GGF2', status: 1, yob: 1945, yod: 2015, carrier: true },
+        { name: 'GF2', sex: 'M', top_level: true, divorced: true },
+
+        // Generation 2: Parents and aunts/uncles
+        { name: 'Uncle1', sex: 'M', mother: 'GM', father: 'GF', divorced: true, conditions: [{ name: 'Diabetes', age: 50 }] },
+        { name: 'Aunt1', sex: 'F', top_level: true, infertility: true },
+        { name: 'Uncle2', sex: 'M', mother: 'GM', father: 'GF', gender: 'TM', age: 52 },
+        { name: 'Aunt2', sex: 'F', top_level: true, relationship_type: 'unmarried' },
+        { name: 'Father', sex: 'M', mother: 'GM', father: 'GF', proband: true, obligate_carrier: true, age: 55 },
+        { name: 'Mother1', sex: 'F', divorced: true, conditions: [{ name: 'Breast Cancer', age: 45 }] },
+        { name: 'Mother2', sex: 'F', art_type: 'egg_donor', brca1_gene_test: { type: 'T', result: 'P' } },
+        { name: 'Aunt3', sex: 'F', mother: 'GM', father: 'GF2', age: 48 },
+        { name: 'Uncle3', sex: 'M', top_level: true, consanguinity_degree: '1st cousins' as any },
+
+        // Generation 2: Pregnancy losses
+        { name: 'SAB1', sex: 'U', mother: 'GM', father: 'GF', terminated: true, pregnancy_outcome: 'miscarriage' },
+        { name: 'Stillbirth1', sex: 'M', mother: 'GM', father: 'GF', terminated: true, pregnancy_outcome: 'stillbirth', terminated_age: 32 },
+
+        // Generation 3: Cousins and children
+        { name: 'Cousin1', sex: 'F', mother: 'Aunt1', father: 'Uncle1', carrier: true, age: 28, gene_copy_number: 'heterozygous' },
+        { name: 'Cousin2', sex: 'M', mother: 'Aunt2', father: 'Uncle2', age: 25, adoption_type: 'in' },
+        { name: 'Cousin3', sex: 'F', mother: 'Aunt3', father: 'Uncle3', age: 20, conditions: [{ name: 'Asthma', age: 8 }] },
+
+        // Father's first marriage children
+        { name: 'Child1', sex: 'F', mother: 'Mother1', father: 'Father', age: 30, conditions: [{ name: 'Depression', age: 25 }] },
+        { name: 'Child2', sex: 'M', mother: 'Mother1', father: 'Father', age: 28, brca1_gene_test: { type: 'T', result: 'N' } },
+
+        // Father's second marriage children - MZ twins + DZ twins + singleton
+        { name: 'MZTwin1', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A', birth_order: 1, age: 12 },
+        { name: 'MZTwin2', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A', birth_order: 2, age: 12 },
+        { name: 'DZTwin1', sex: 'F', mother: 'Mother2', father: 'Father', dztwin: 'B', birth_order: 3, age: 8 },
+        { name: 'DZTwin2', sex: 'F', mother: 'Mother2', father: 'Father', dztwin: 'B', birth_order: 4, age: 8 },
+        { name: 'Youngest', sex: 'M', mother: 'Mother2', father: 'Father', birth_order: 5, age: 5 },
+
+        // Generation 4: Next generation (showing anticipation and prenatal testing)
+        { name: 'Grandchild1', sex: 'F', mother: 'Child1', top_level: true, consultand: true, age: 8, anticipation: true },
+        { name: 'Grandchild2', sex: 'U', mother: 'Cousin3', top_level: true, terminated: true, pregnancy_outcome: 'induced_termination' },
     ], { labels: ['age', 'generation'] });
 
     console.log(`\n✅ Generated 21 scenario diagrams in ${outputDir}`);

@@ -396,8 +396,10 @@ export class PedigreeRenderer {
                 const p2 = individuals.find(i => i.name === partnership.partner2);
 
                 if (!p1 || !p2) continue;
-                if (positioned.has(p1.name) || positioned.has(p2.name)) continue;
                 if (partnership.children.length === 0) continue;
+
+                // Skip if BOTH partners already positioned
+                if (positioned.has(p1.name) && positioned.has(p2.name)) continue;
 
                 // Get child positions
                 const childPositions = partnership.children
@@ -409,11 +411,28 @@ export class PedigreeRenderer {
                     const childMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
 
                     // Position partners symmetrically around midpoint
-                    let p1X = childMidX - minNodeSpacing / 2;
-                    let p2X = childMidX + minNodeSpacing / 2;
+                    // If one partner already positioned (serial marriage), use their position as constraint
+                    let p1X: number, p2X: number;
+
+                    if (positioned.has(p1.name)) {
+                        // p1 already positioned, calculate p2 to maintain centering
+                        const existingP1 = this.nodePositions.get(p1.name)!;
+                        p1X = existingP1.x;
+                        // Ideally p2X = 2 * childMidX - p1X to maintain symmetry, but respect spacing
+                        p2X = Math.max(p1X + minNodeSpacing, 2 * childMidX - p1X);
+                    } else if (positioned.has(p2.name)) {
+                        // p2 already positioned, calculate p1
+                        const existingP2 = this.nodePositions.get(p2.name)!;
+                        p2X = existingP2.x;
+                        p1X = Math.min(p2X - minNodeSpacing, 2 * childMidX - p2X);
+                    } else {
+                        // Neither positioned yet - normal case
+                        p1X = childMidX - minNodeSpacing / 2;
+                        p2X = childMidX + minNodeSpacing / 2;
+                    }
 
                     // Check for conflicts with already positioned individuals in this generation
-                    // If conflict detected, shift the entire partnership to the right
+                    // If conflict detected, shift the entire partnership (maintaining spacing)
                     const existingPositions = Array.from(this.nodePositions.values())
                         .filter(pos => pos.generation === gen);
 
@@ -422,32 +441,76 @@ export class PedigreeRenderer {
                         needsShift = false;
 
                         for (const existing of existingPositions) {
+                            // Skip self-checking for already positioned partners
+                            if ((positioned.has(p1.name) && existing.individual.name === p1.name) ||
+                                (positioned.has(p2.name) && existing.individual.name === p2.name)) {
+                                continue;
+                            }
+
                             const distToP1 = Math.abs(existing.x - p1X);
                             const distToP2 = Math.abs(existing.x - p2X);
 
-                            // If either partner would be too close to an existing position, shift right
-                            if (distToP1 < minNodeSpacing || distToP2 < minNodeSpacing) {
-                                // Calculate minimum shift needed to clear all conflicts
-                                // Place p1 at least minNodeSpacing away from the rightmost conflicting position
-                                const minP1X = existing.x + minNodeSpacing;
-                                const minP2X = existing.x + minNodeSpacing;
+                            // Check conflicts
+                            const p1Conflict = distToP1 < minNodeSpacing;
+                            const p2Conflict = distToP2 < minNodeSpacing;
 
-                                // Shift to the maximum of the two constraints
-                                const targetP1X = Math.max(p1X, minP1X, minP2X - minNodeSpacing);
-                                const shiftAmount = targetP1X - p1X;
+                            if (p1Conflict || p2Conflict) {
+                                // Calculate shift amount needed
+                                let shiftAmount = 0;
 
-                                p1X += shiftAmount;
-                                p2X += shiftAmount;
-                                needsShift = true; // Check again in case we created a new conflict
+                                if (positioned.has(p1.name)) {
+                                    // p1 is fixed, shift p2 only
+                                    if (p2Conflict) {
+                                        let newP2X = existing.x + minNodeSpacing;
+                                        // Ensure we don't shift p2 onto p1
+                                        if (Math.abs(newP2X - p1X) < minNodeSpacing) {
+                                            // Try shifting in the other direction
+                                            newP2X = existing.x - minNodeSpacing;
+                                            // If that also conflicts with p1, shift further right
+                                            if (Math.abs(newP2X - p1X) < minNodeSpacing) {
+                                                newP2X = p1X + minNodeSpacing;
+                                            }
+                                        }
+                                        shiftAmount = newP2X - p2X;
+                                        p2X = newP2X;
+                                    }
+                                } else if (positioned.has(p2.name)) {
+                                    // p2 is fixed, shift p1 only
+                                    if (p1Conflict) {
+                                        // Try shifting right first (preferred to maintain ideal spacing from p2)
+                                        let newP1X = existing.x + minNodeSpacing;
+                                        // If that creates conflict with p2, shift further right past p2
+                                        if (Math.abs(newP1X - p2X) < minNodeSpacing) {
+                                            newP1X = Math.max(newP1X, p2X + minNodeSpacing);
+                                        }
+                                        shiftAmount = newP1X - p1X;
+                                        p1X = newP1X;
+                                    }
+                                } else {
+                                    // Neither fixed, shift entire partnership together
+                                    const minP1X = existing.x + minNodeSpacing;
+                                    const minP2X = existing.x + minNodeSpacing;
+                                    const targetP1X = Math.max(p1X, minP1X, minP2X - minNodeSpacing);
+                                    shiftAmount = targetP1X - p1X;
+                                    p1X += shiftAmount;
+                                    p2X += shiftAmount;
+                                }
+
+                                needsShift = true;
                                 break;
                             }
                         }
                     }
 
-                    this.nodePositions.set(p1.name, { individual: p1, x: p1X, y, generation: gen });
-                    this.nodePositions.set(p2.name, { individual: p2, x: p2X, y, generation: gen });
-                    positioned.add(p1.name);
-                    positioned.add(p2.name);
+                    // Set positions (only if not already set)
+                    if (!positioned.has(p1.name)) {
+                        this.nodePositions.set(p1.name, { individual: p1, x: p1X, y, generation: gen });
+                        positioned.add(p1.name);
+                    }
+                    if (!positioned.has(p2.name)) {
+                        this.nodePositions.set(p2.name, { individual: p2, x: p2X, y, generation: gen });
+                        positioned.add(p2.name);
+                    }
 
                     currentX = Math.max(currentX, Math.max(p1X, p2X) + minNodeSpacing);
                 }
