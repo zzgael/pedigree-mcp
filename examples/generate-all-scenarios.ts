@@ -185,7 +185,7 @@ async function main() {
         { name: 'Mother', sex: 'F', top_level: true, art_type: 'egg_donor' },
         { name: 'Twin1', sex: 'M', mother: 'Mother', father: 'Father', mztwin: 'A', birth_order: 1, age: 10 },
         { name: 'Twin2', sex: 'M', mother: 'Mother', father: 'Father', mztwin: 'A', birth_order: 2, age: 10 },
-        { name: 'Youngest', sex: 'F', mother: 'Mother', father: 'Father', birth_order: 3, gender: 'TF', age: 6 },
+        { name: 'Youngest', sex: 'F', mother: 'Mother', father: 'Father', birth_order: 3, age: 6 },
     ], { labels: ['age', 'generation'] });
 
     console.log(`\n✅ Generated 21 scenario diagrams in ${outputDir}`);
