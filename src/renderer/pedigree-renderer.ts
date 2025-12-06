@@ -242,10 +242,53 @@ export class PedigreeRenderer {
                 const p1HasParent = !!(p1.mother || p1.father);
                 const p2HasParent = !!(p2.mother || p2.father);
 
+                // Check if either partner has children from OTHER partnerships (not this one)
+                // If both have other children, this is a cross-generational marriage and shouldn't be aligned
+                const p1OtherChildren = this.dataset.filter(
+                    ind => (ind.mother === p1.name || ind.father === p1.name) &&
+                           !partnership.children.includes(ind.name)
+                ).length > 0;
+
+                const p2OtherChildren = this.dataset.filter(
+                    ind => (ind.mother === p2.name || ind.father === p2.name) &&
+                           !partnership.children.includes(ind.name)
+                ).length > 0;
+
+                // Check if adjusting either partner would violate parent-child constraints
+                // (i.e., would place them at same generation or below their parents/above their children)
+                const p1ParentGen = Math.max(
+                    p1.mother ? generations.get(p1.mother)! : -1,
+                    p1.father ? generations.get(p1.father)! : -1
+                );
+                const p2ParentGen = Math.max(
+                    p2.mother ? generations.get(p2.mother)! : -1,
+                    p2.father ? generations.get(p2.father)! : -1
+                );
+
+                // If adjusting p1 to match p2 would place p1 at/above its parents, skip
+                const p1CanAdjust = p1ParentGen < 0 || p2Gen > p1ParentGen;
+                // If adjusting p2 to match p1 would place p2 at/above its parents, skip
+                const p2CanAdjust = p2ParentGen < 0 || p1Gen > p2ParentGen;
+
+                // If neither can adjust without violating constraints, skip alignment
+                // This handles cross-generational marriages (e.g., first cousins once removed)
+                if (!p1CanAdjust && !p2CanAdjust) {
+                    continue; // Allow diagonal partnership line (Bennett standard)
+                }
+
                 let targetGen: number;
                 let adjustedPartner: string;
 
-                if (p1HasParent && !p2HasParent) {
+                // CRITICAL: Respect parent-child constraints when choosing which partner to adjust
+                if (!p1CanAdjust && p2CanAdjust) {
+                    // p1 cannot be adjusted (would violate parent-child), so adjust p2
+                    targetGen = p1Gen;
+                    adjustedPartner = partnership.partner2;
+                } else if (!p2CanAdjust && p1CanAdjust) {
+                    // p2 cannot be adjusted (would violate parent-child), so adjust p1
+                    targetGen = p2Gen;
+                    adjustedPartner = partnership.partner1;
+                } else if (p1HasParent && !p2HasParent) {
                     // p2 is a founder, p1 has parents - move p2 UP to match p1
                     // This keeps the parent-child structure intact (GP above Père)
                     targetGen = p1Gen;
@@ -253,6 +296,14 @@ export class PedigreeRenderer {
                 } else if (p2HasParent && !p1HasParent) {
                     // p1 is a founder, p2 has parents - move p1 UP to match p2
                     // This keeps the parent-child structure intact
+                    targetGen = p2Gen;
+                    adjustedPartner = partnership.partner1;
+                } else if (p1OtherChildren && !p2OtherChildren) {
+                    // p1 has other children - rooted in this generation, adjust p2 instead
+                    targetGen = p1Gen;
+                    adjustedPartner = partnership.partner2;
+                } else if (p2OtherChildren && !p1OtherChildren) {
+                    // p2 has other children - rooted in this generation, adjust p1 instead
                     targetGen = p2Gen;
                     adjustedPartner = partnership.partner1;
                 } else {
@@ -322,8 +373,11 @@ export class PedigreeRenderer {
 
         const numGenerations =
             Math.max(...Array.from(generations.values())) + 1;
-        const verticalSpacing =
-            (height - padding * 2) / Math.max(numGenerations - 1, 1);
+
+        // Adaptive vertical spacing: cap at 200px per generation to avoid excessive spacing in simple pedigrees
+        const maxVerticalSpacing = 200;
+        const calculatedSpacing = (height - padding * 2) / Math.max(numGenerations - 1, 1);
+        const verticalSpacing = Math.min(calculatedSpacing, maxVerticalSpacing);
 
         this.generationGroups = genGroups;
 
@@ -355,8 +409,40 @@ export class PedigreeRenderer {
                     const childMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
 
                     // Position partners symmetrically around midpoint
-                    const p1X = childMidX - minNodeSpacing / 2;
-                    const p2X = childMidX + minNodeSpacing / 2;
+                    let p1X = childMidX - minNodeSpacing / 2;
+                    let p2X = childMidX + minNodeSpacing / 2;
+
+                    // Check for conflicts with already positioned individuals in this generation
+                    // If conflict detected, shift the entire partnership to the right
+                    const existingPositions = Array.from(this.nodePositions.values())
+                        .filter(pos => pos.generation === gen);
+
+                    let needsShift = true;
+                    while (needsShift) {
+                        needsShift = false;
+
+                        for (const existing of existingPositions) {
+                            const distToP1 = Math.abs(existing.x - p1X);
+                            const distToP2 = Math.abs(existing.x - p2X);
+
+                            // If either partner would be too close to an existing position, shift right
+                            if (distToP1 < minNodeSpacing || distToP2 < minNodeSpacing) {
+                                // Calculate minimum shift needed to clear all conflicts
+                                // Place p1 at least minNodeSpacing away from the rightmost conflicting position
+                                const minP1X = existing.x + minNodeSpacing;
+                                const minP2X = existing.x + minNodeSpacing;
+
+                                // Shift to the maximum of the two constraints
+                                const targetP1X = Math.max(p1X, minP1X, minP2X - minNodeSpacing);
+                                const shiftAmount = targetP1X - p1X;
+
+                                p1X += shiftAmount;
+                                p2X += shiftAmount;
+                                needsShift = true; // Check again in case we created a new conflict
+                                break;
+                            }
+                        }
+                    }
 
                     this.nodePositions.set(p1.name, { individual: p1, x: p1X, y, generation: gen });
                     this.nodePositions.set(p2.name, { individual: p2, x: p2X, y, generation: gen });
@@ -423,6 +509,32 @@ export class PedigreeRenderer {
 
         // Center entire diagram on canvas
         this.centerDiagramOnCanvas(width);
+
+        // Validate: no two individuals should have the same position
+        this.validateNoOverlappingPositions();
+    }
+
+    /**
+     * Validate that no two individuals occupy the same position
+     * This prevents rendering bugs where symbols overlap
+     */
+    private validateNoOverlappingPositions(): void {
+        const positions = Array.from(this.nodePositions.values());
+
+        for (let i = 0; i < positions.length; i++) {
+            for (let j = i + 1; j < positions.length; j++) {
+                const pos1 = positions[i];
+                const pos2 = positions[j];
+
+                if (pos1.x === pos2.x && pos1.y === pos2.y) {
+                    throw new Error(
+                        `Position overlap detected: "${pos1.individual.name}" and "${pos2.individual.name}" ` +
+                        `are both positioned at (${pos1.x}, ${pos1.y}). ` +
+                        `This indicates a bug in the positioning algorithm.`
+                    );
+                }
+            }
+        }
     }
 
 
@@ -868,7 +980,7 @@ export class PedigreeRenderer {
             // Bennett standard: no children by choice indicator (line through offspring connection)
             if (partnership.children.length === 0 && (ind1.no_children_by_choice || ind2.no_children_by_choice)) {
                 const midX = (p1.x + p2.x) / 2;
-                const offspringY = p1.y + generationSpacing / 3; // Position below partnership line
+                const offspringY = p1.y + symbolSize * 1.5; // Position below partnership line
                 drawNoChildrenByChoiceIndicator(svg, midX, offspringY);
             }
 
@@ -1108,7 +1220,7 @@ export class PedigreeRenderer {
                 drawPregnancyIndicator(g as any, fontFamily, fontSize);
             }
             // Bennett standard: pregnancy outcome label (SAB, TOP, ECT, SB)
-            if (ind.pregnancy_outcome) {
+            if (ind.pregnancy_outcome && ind.pregnancy_outcome !== 'unknown') {
                 drawPregnancyOutcomeLabel(g as any, ind.pregnancy_outcome, symbolSize, fontFamily);
             }
             // Bennett standard: ART (Assisted Reproductive Technology) indicator

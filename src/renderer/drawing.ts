@@ -208,24 +208,27 @@ export function drawAdoptionBrackets(
 /**
  * Draw adoption OUT indicator (arrow pointing away from symbol)
  * Bennett standard: child placed for adoption (vs adopted IN with brackets)
+ * Positioned in upper-right to avoid label collision
  */
 export function drawAdoptedOutIndicator(g: GroupSelection, symbolSize: number): void {
-    const offset = symbolSize * 0.7;
+    const xOffset = symbolSize * 0.6;
+    const yOffset = -symbolSize * 0.5; // Move to upper area
     const arrowSize = symbolSize / 4;
 
     // Arrow pointing right (away from symbol)
     g.append('polygon')
         .attr(
             'points',
-            `${offset},${offset} ${offset + arrowSize},${offset + arrowSize / 2} ${offset},${offset + arrowSize}`,
+            `${xOffset},${yOffset} ${xOffset + arrowSize},${yOffset + arrowSize / 2} ${xOffset},${yOffset + arrowSize}`,
         )
         .attr('fill', '#333');
 
-    // Label "OUT"
+    // Label "OUT" - positioned to the right of arrow
     g.append('text')
-        .attr('x', offset + arrowSize + 3)
-        .attr('y', offset + arrowSize / 2 + 3)
+        .attr('x', xOffset + arrowSize + 2)
+        .attr('y', yOffset + arrowSize / 2 + 3)
         .attr('font-size', '8px')
+        .attr('font-weight', 'bold')
         .attr('fill', '#333')
         .text('OUT');
 }
@@ -289,6 +292,7 @@ export function drawBirthOrderLabel(
 /**
  * Draw ART (Assisted Reproductive Technology) indicator
  * Bennett standard: symbols for egg/sperm/embryo donation and surrogacy
+ * Positioned in upper-right quadrant
  */
 export function drawARTIndicator(
     g: GroupSelection,
@@ -303,10 +307,11 @@ export function drawARTIndicator(
         surrogate: 'GC', // GC = Gestational Carrier
     };
 
-    const offset = symbolSize * 0.5;
+    const xOffset = symbolSize * 0.5 + 5; // Extra 5px to the right
+    const yOffset = -symbolSize * 0.5 + 4;
     g.append('text')
-        .attr('x', offset)
-        .attr('y', -offset + 4)
+        .attr('x', xOffset)
+        .attr('y', yOffset)
         .attr('text-anchor', 'middle')
         .attr('font-family', fontFamily)
         .attr('font-size', '9px')
@@ -318,6 +323,7 @@ export function drawARTIndicator(
 /**
  * Draw pregnancy outcome label
  * Bennett standard: SAB (spontaneous abortion), TOP (termination of pregnancy), etc.
+ * Positioned below triangle symbol to avoid label collision
  */
 export function drawPregnancyOutcomeLabel(
     g: GroupSelection,
@@ -332,12 +338,18 @@ export function drawPregnancyOutcomeLabel(
         stillbirth: 'SB',
     };
 
-    g.append('text')
+    // Position ABOVE the triangle symbol to avoid name and dynamic legend collision below
+    // White stroke for better visibility on any background
+    const text = g.append('text')
         .attr('x', 0)
-        .attr('y', symbolSize * 0.7)
+        .attr('y', -symbolSize * 0.8) // Above symbol to avoid legend collision
         .attr('text-anchor', 'middle')
         .attr('font-family', fontFamily)
         .attr('font-size', '8px')
+        .attr('font-weight', 'bold')
+        .attr('stroke', '#ffffff')
+        .attr('stroke-width', 2)
+        .attr('paint-order', 'stroke')
         .attr('fill', '#666')
         .text(labels[outcome]);
 }
@@ -372,6 +384,7 @@ export function drawGeneCopyNumberLabel(
 /**
  * Draw gender identity marker (Bennett 2022)
  * Shows gender identity when different from sex assigned at birth
+ * Positioned in upper-left quadrant to avoid label collision
  */
 export function drawGenderIdentityMarker(
     g: GroupSelection,
@@ -388,10 +401,13 @@ export function drawGenderIdentityMarker(
         TF: 'TF', // Trans female
     };
 
-    const offset = symbolSize * 0.6;
+    // Position in upper-left quadrant (like Ashkenazi marker is upper-right)
+    const xOffset = -symbolSize * 0.75 - 5; // Extra 5px to the left
+    const yOffset = -symbolSize * 0.4;
+
     g.append('text')
-        .attr('x', -offset)
-        .attr('y', offset + 5)
+        .attr('x', xOffset)
+        .attr('y', yOffset)
         .attr('text-anchor', 'start')
         .attr('font-family', fontFamily)
         .attr('font-size', '9px')

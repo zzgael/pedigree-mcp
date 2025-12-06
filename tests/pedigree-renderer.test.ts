@@ -2913,5 +2913,38 @@ describe('PedigreeRenderer', () => {
             expect(svg).toContain('sibling1');
             expect(svg).toContain('sibling2');
         });
+
+        it('should prevent position overlaps by shifting partnerships', () => {
+            // Regression test for overlapping symbols bug - renderer should prevent overlaps
+            const dataset: Individual[] = [
+                { name: 'Husband', sex: 'M', top_level: true },
+                { name: 'Wife', sex: 'F', top_level: true },
+                { name: 'Child1', sex: 'M', mother: 'Wife', father: 'Husband', age: 10 },
+                { name: 'Partner1', sex: 'M', top_level: true },
+                { name: 'Partner2', sex: 'F', top_level: true, relationship_type: 'unmarried' },
+                { name: 'Child2', sex: 'F', mother: 'Partner2', father: 'Partner1', age: 6 },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+
+            // Renderer should successfully position all individuals without overlap
+            renderer.calculatePositions();
+
+            // Verify no overlaps exist
+            const positions = Array.from(renderer.nodePositions.values());
+            for (let i = 0; i < positions.length; i++) {
+                for (let j = i + 1; j < positions.length; j++) {
+                    const pos1 = positions[i];
+                    const pos2 = positions[j];
+                    const overlaps = pos1.x === pos2.x && pos1.y === pos2.y;
+                    expect(overlaps).toBe(false);
+                }
+            }
+
+            // Verify Wife and Partner1 are properly spaced
+            const wifePos = renderer.nodePositions.get('Wife');
+            const partner1Pos = renderer.nodePositions.get('Partner1');
+            expect(Math.abs(wifePos.x - partner1Pos.x)).toBeGreaterThanOrEqual(70); // minNodeSpacing
+        });
     });
 });
