@@ -2945,6 +2945,14 @@ describe('PedigreeRenderer', () => {
             const wifePos = renderer.nodePositions.get('Wife');
             const partner1Pos = renderer.nodePositions.get('Partner1');
             expect(Math.abs(wifePos.x - partner1Pos.x)).toBeGreaterThanOrEqual(70); // minNodeSpacing
+
+            // CRITICAL: Child2 should be centered below Partner1-Partner2 partnership
+            const partner2Pos = renderer.nodePositions.get('Partner2');
+            const child2Pos = renderer.nodePositions.get('Child2');
+            const partnershipMidX = (partner1Pos.x + partner2Pos.x) / 2;
+
+            // Child2 X should be at partnership midpoint (tolerance: 1px)
+            expect(Math.abs(child2Pos.x - partnershipMidX)).toBeLessThan(1);
         });
     });
 });

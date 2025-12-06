@@ -497,7 +497,33 @@ export class PedigreeRenderer {
                 positioned.add(p2.name);
             }
 
-            // Phase 4: Position remaining individuals (left-to-right)
+            // Phase 4: Position children of partnerships (grouped by partnership)
+            // Process children in partnership order to keep family units together
+            for (const partnership of this.partnerships) {
+                const childrenInThisGen = partnership.children.filter(c => {
+                    const child = this.individuals.get(c);
+                    return child && individuals.includes(child) && !positioned.has(c);
+                });
+
+                if (childrenInThisGen.length > 0) {
+                    // Position children left-to-right, centered as a group
+                    const groupWidth = (childrenInThisGen.length - 1) * minNodeSpacing;
+                    const groupStartX = currentX;
+
+                    for (let i = 0; i < childrenInThisGen.length; i++) {
+                        const childName = childrenInThisGen[i];
+                        const child = this.individuals.get(childName)!;
+                        const childX = groupStartX + i * minNodeSpacing;
+                        this.nodePositions.set(childName, { individual: child, x: childX, y, generation: gen });
+                        positioned.add(childName);
+                    }
+
+                    // Move currentX past this family group + extra spacing for next partnership
+                    currentX = groupStartX + groupWidth + minNodeSpacing * 2;
+                }
+            }
+
+            // Phase 5: Position remaining individuals (left-to-right)
             for (const ind of individuals) {
                 if (positioned.has(ind.name)) continue;
 
