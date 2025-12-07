@@ -605,10 +605,11 @@ export function drawAshkenaziIndicator(
     fontFamily: string,
     fontSize: string,
 ): void {
-    const offset = symbolSize * 0.4; // Position in upper right quadrant
+    const xOffset = symbolSize * 0.6 + 3; // Further right with extra spacing
+    const yOffset = -symbolSize * 0.6; // Higher up
     g.append('text')
-        .attr('x', offset)
-        .attr('y', -offset + 4) // Adjust for text baseline
+        .attr('x', xOffset)
+        .attr('y', yOffset + 4) // Adjust for text baseline
         .attr('text-anchor', 'middle')
         .attr('font-family', fontFamily)
         .attr('font-size', '10px') // Slightly smaller than default
@@ -705,10 +706,11 @@ export function drawAnticipationIndicator(
     symbolSize: number,
     fontFamily: string,
 ): void {
-    const offset = symbolSize * 0.5;
+    const xOffset = -symbolSize * 0.6 - 3; // Further left with extra spacing
+    const yOffset = -symbolSize * 0.6; // Higher up
     g.append('text')
-        .attr('x', -offset)
-        .attr('y', -offset + 4)
+        .attr('x', xOffset)
+        .attr('y', yOffset + 4)
         .attr('text-anchor', 'middle')
         .attr('font-family', fontFamily)
         .attr('font-size', '14px')
@@ -738,10 +740,10 @@ export function drawEctopicIndicator(
     symbolSize: number,
     fontFamily: string,
 ): void {
-    const offset = symbolSize * 0.6;
+    const yOffset = symbolSize * 1.5 + 5; // Well below symbol and labels
     g.append('text')
         .attr('x', 0)
-        .attr('y', offset)
+        .attr('y', yOffset)
         .attr('text-anchor', 'middle')
         .attr('font-family', fontFamily)
         .attr('font-size', '9px')
