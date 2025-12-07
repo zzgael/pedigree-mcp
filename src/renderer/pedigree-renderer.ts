@@ -676,11 +676,56 @@ export class PedigreeRenderer {
             console.log(`Positioned in Gen ${gen}: ${genPositioned.join(', ')}`);
         }
 
+        // Backward pass: Center children below partnerships
+        // This handles cases where children were positioned before their parents (bottom-up algorithm)
+        this.centerChildrenBelowPartnerships(minNodeSpacing);
+
         // Center entire diagram on canvas
         this.centerDiagramOnCanvas(width);
 
         // Validate: no two individuals should have the same position
         this.validateNoOverlappingPositions();
+    }
+
+    /**
+     * Backward pass to center children below their parents
+     * Runs after all positioning is complete to fix cases where Phase 4 couldn't center
+     * because parents weren't positioned yet (bottom-up algorithm processes children first)
+     */
+    private centerChildrenBelowPartnerships(minNodeSpacing: number): void {
+        for (const partnership of this.partnerships) {
+            if (partnership.children.length === 0) continue;
+
+            const p1Pos = this.nodePositions.get(partnership.partner1);
+            const p2Pos = this.nodePositions.get(partnership.partner2);
+
+            if (!p1Pos || !p2Pos) continue;
+
+            // Get all positioned children
+            const childPositions = partnership.children
+                .map(c => this.nodePositions.get(c))
+                .filter((p): p is { individual: Individual; x: number; y: number; generation: number } => p !== undefined);
+
+            if (childPositions.length === 0) continue;
+
+            // Calculate partnership midpoint and children midpoint
+            const partnershipMidX = (p1Pos.x + p2Pos.x) / 2;
+            const childrenMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
+
+            // Calculate shift needed to center children below partnership
+            const shift = partnershipMidX - childrenMidX;
+
+            // Only apply shift if significant (> 1px) to avoid floating point noise
+            if (Math.abs(shift) < 1) continue;
+
+            // Apply shift to all children
+            for (const childName of partnership.children) {
+                const childPos = this.nodePositions.get(childName);
+                if (childPos) {
+                    childPos.x += shift;
+                }
+            }
+        }
     }
 
     /**
