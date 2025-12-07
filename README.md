@@ -20,6 +20,10 @@
   <img src="example.png" alt="Example Pedigree" width="700">
 </p>
 
+<p align="center">
+  <em>BRCA1 hereditary breast/ovarian cancer family history demonstrating: 3 generations, affected individuals with combined conditions, MZ identical twins, carrier status, deceased indicators, proband + consultand markers, and gene test results (BRCA1+/BRCA1-)</em>
+</p>
+
 ## Installation
 
 ### Prerequisites
@@ -301,7 +305,7 @@ npx tsc --noEmit
 
 ## Testing
 
-- **87 tests total** covering:
+- **159 tests total** covering:
   - Validation (parent references, gender constraints)
   - SVG rendering (all symbol types, indicators)
   - Condition markers and multi-condition pie charts
