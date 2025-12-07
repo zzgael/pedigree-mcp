@@ -662,6 +662,7 @@ export function drawTerminationSymbol(
     symbolSize: number,
     nodeBackground: string,
     gestationalWeeks?: number,
+    ectopic?: boolean,
 ): void {
     // Size varies based on gestational age
     // Early loss (<20 weeks): small triangle
@@ -674,6 +675,17 @@ export function drawTerminationSymbol(
         .attr('fill', nodeBackground)
         .attr('stroke', '#333')
         .attr('stroke-width', 2);
+
+    // Bennett 2008: Ectopic pregnancy shown as triangle with forward slash
+    if (ectopic) {
+        g.append('line')
+            .attr('x1', -half * 0.6)
+            .attr('y1', half * 0.6)
+            .attr('x2', half * 0.6)
+            .attr('y2', -half * 0.6)
+            .attr('stroke', '#D5494A')
+            .attr('stroke-width', 2);
+    }
 }
 
 /**
@@ -764,27 +776,6 @@ export function drawObligateCarrierIndicator(g: GroupSelection): void {
         .attr('fill', 'none')
         .attr('stroke', '#333')
         .attr('stroke-width', 2);
-}
-
-/**
- * Draw ectopic pregnancy indicator (EP marker)
- * Bennett standard: "EP" text marker for ectopic pregnancy
- */
-export function drawEctopicIndicator(
-    g: GroupSelection,
-    symbolSize: number,
-    fontFamily: string,
-): void {
-    const yOffset = symbolSize * 1.5 + 5; // Well below symbol and labels
-    g.append('text')
-        .attr('x', 0)
-        .attr('y', yOffset)
-        .attr('text-anchor', 'middle')
-        .attr('font-family', fontFamily)
-        .attr('font-size', '9px')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#D5494A') // Red for medical condition
-        .text('EP');
 }
 
 /**

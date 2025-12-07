@@ -36,7 +36,6 @@ import {
     drawConsultandIndicator,
     drawAnticipationIndicator,
     drawObligateCarrierIndicator,
-    drawEctopicIndicator,
     drawInfertilityIndicator,
     drawPregnancyDurationLabel,
     drawPregnancyOutcomeLabel,
@@ -1288,7 +1287,8 @@ export class PedigreeRenderer {
             // Draw symbol based on sex (or termination triangle per Bennett standard)
             if (ind.terminated) {
                 // Bennett standard: triangle size varies by gestational age
-                drawTerminationSymbol(g as any, symbolSize, nodeBackground, ind.terminated_age);
+                // Ectopic pregnancies shown with forward slash through triangle
+                drawTerminationSymbol(g as any, symbolSize, nodeBackground, ind.terminated_age, ind.ectopic);
             } else if (ind.sex === 'M') {
                 drawMaleSymbol(
                     g as any,
@@ -1351,8 +1351,9 @@ export class PedigreeRenderer {
             if (ind.pregnant) {
                 drawPregnancyIndicator(g as any, fontFamily, fontSize);
             }
-            // Bennett standard: pregnancy outcome label (SAB, TOP, ECT, SB)
-            if (ind.pregnancy_outcome && ind.pregnancy_outcome !== 'unknown') {
+            // Bennett standard: pregnancy outcome label (SAB, TOP, SB)
+            // Note: Ectopic is shown via slash through triangle symbol, not text label
+            if (ind.pregnancy_outcome && ind.pregnancy_outcome !== 'unknown' && ind.pregnancy_outcome !== 'ectopic') {
                 drawPregnancyOutcomeLabel(g as any, ind.pregnancy_outcome, symbolSize, fontFamily);
             }
             // Bennett standard: ART (Assisted Reproductive Technology) indicator
@@ -1371,10 +1372,7 @@ export class PedigreeRenderer {
             if (ind.anticipation) {
                 drawAnticipationIndicator(g as any, symbolSize, fontFamily);
             }
-            // Bennett standard: ectopic pregnancy (EP marker)
-            if (ind.ectopic) {
-                drawEctopicIndicator(g as any, symbolSize, fontFamily);
-            }
+            // Note: Ectopic pregnancy is now shown as slash through termination triangle (see drawTerminationSymbol)
             // Bennett standard: infertility (crossed lines)
             if (ind.infertility) {
                 drawInfertilityIndicator(g as any, symbolSize);

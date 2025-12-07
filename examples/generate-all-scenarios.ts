@@ -89,7 +89,7 @@ async function main() {
     // 9. Special Indicators
     await generateScenario('09-special-indicators', [
         { name: 'Ashkenazi', sex: 'M', top_level: true, ashkenazi: 1, age: 55 },
-        { name: 'Ectopic', sex: 'F', top_level: true, ectopic: true, age: 30 },
+        { name: 'Ectopic', sex: 'F', top_level: true, terminated: true, ectopic: true, pregnancy_outcome: 'ectopic', age: 30 },
         { name: 'Infertility', sex: 'M', top_level: true, infertility: true, age: 45 },
         { name: 'Anticipation', sex: 'F', top_level: true, anticipation: true, age: 50 },
     ]);
@@ -160,11 +160,16 @@ async function main() {
         { name: 'Child', sex: 'F', mother: 'Ex Wife', father: 'Ex Husband', age: 18 },
     ]);
 
-    // 19. Conditions with Legend
+    // 19. Conditions with Legend (single and multiple conditions)
     await generateScenario('19-conditions', [
         { name: 'Dad', sex: 'M', top_level: true, conditions: [{ name: 'Diabetes', age: 45 }] },
         { name: 'Mom', sex: 'F', top_level: true, conditions: [{ name: 'Breast Cancer', age: 50 }] },
         { name: 'Child', sex: 'M', mother: 'Mom', father: 'Dad', conditions: [{ name: 'Asthma', age: 8 }], age: 12 },
+        // Multiple conditions on one individual (shows quadrants for male, pie slices for female)
+        { name: 'Sister', sex: 'F', mother: 'Mom', father: 'Dad', age: 15, conditions: [
+            { name: 'Depression', age: 12 },
+            { name: 'Anxiety', age: 13 }
+        ]},
     ]);
 
     // 20. Gene Tests
@@ -219,8 +224,10 @@ async function main() {
         { name: 'Youngest', sex: 'M', mother: 'Mother2', father: 'Father', birth_order: 5, age: 5 },
 
         // Generation 4: Next generation (showing anticipation and prenatal testing)
-        { name: 'Grandchild1', sex: 'F', mother: 'Child1', top_level: true, consultand: true, age: 8, anticipation: true },
-        { name: 'Grandchild2', sex: 'U', mother: 'Cousin3', top_level: true, terminated: true, pregnancy_outcome: 'induced_termination' },
+        { name: 'Grandchild1', sex: 'F', mother: 'Child1', father: 'Partner1', consultand: true, age: 8, anticipation: true },
+        { name: 'Partner1', sex: 'M', top_level: true },
+        { name: 'Grandchild2', sex: 'U', mother: 'Cousin3', father: 'Partner2', terminated: true, pregnancy_outcome: 'induced_termination' },
+        { name: 'Partner2', sex: 'M', top_level: true },
     ], { labels: ['age', 'generation'] });
 
     console.log(`\n✅ Generated 21 scenario diagrams in ${outputDir}`);

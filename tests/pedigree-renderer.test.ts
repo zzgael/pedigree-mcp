@@ -2205,21 +2205,52 @@ describe('PedigreeRenderer', () => {
             expect(rightBrackets.length).toBeGreaterThanOrEqual(1);
         });
 
-        it('should render ectopic pregnancy indicator with EP marker', () => {
+        it('should render ectopic pregnancy as triangle with diagonal slash (TDD)', () => {
             const dataset: Individual[] = [
                 {
                     name: 'ectopic',
                     sex: 'F',
                     top_level: true,
+                    terminated: true, // Ectopic pregnancies are terminated
                     ectopic: true,
+                    pregnancy_outcome: 'ectopic',
                 },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
             const svg = renderer.renderSvg();
 
-            // Should have "EP" text marker
-            expect(svg).toContain('>EP<');
+            // Should have a triangle (polygon)
+            expect(svg).toContain('<polygon');
+
+            // Should have a diagonal slash line through the triangle
+            // The slash should be a line element with both dx and dy (diagonal)
+            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            let match;
+            while ((match = lineRegex.exec(svg)) !== null) {
+                lines.push({
+                    x1: parseFloat(match[1]),
+                    y1: parseFloat(match[2]),
+                    x2: parseFloat(match[3]),
+                    y2: parseFloat(match[4]),
+                });
+            }
+
+            // Find diagonal lines (slash through symbol)
+            const diagonalLines = lines.filter(line => {
+                const dx = Math.abs(line.x2 - line.x1);
+                const dy = Math.abs(line.y2 - line.y1);
+                // Diagonal line has both horizontal and vertical components
+                return dx > 5 && dy > 5;
+            });
+
+            // Should have at least one diagonal slash line
+            expect(diagonalLines.length).toBeGreaterThanOrEqual(1);
+
+            // Should NOT have "EP" or "ECT" text label
+            expect(svg).not.toContain('>EP<');
+            expect(svg).not.toContain('>ECT<');
         });
 
         it('should render infertility indicator with crossed lines', () => {
