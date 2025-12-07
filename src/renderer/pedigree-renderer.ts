@@ -28,6 +28,7 @@ import {
     drawPartnershipLine,
     drawLine,
     drawTwinBar,
+    drawDzTwinLines,
     drawLabel,
     drawCarrierIndicator,
     drawPregnancyIndicator,
@@ -1111,10 +1112,14 @@ export class PedigreeRenderer {
                     );
                 }
 
-                // Twin bars
+                // Twin bars (MZ) and diagonal lines (DZ)
                 const processedTwins = new Set<string>();
+                const processedDzTwins = new Set<string>();
+
                 for (const childPos of childPositions) {
                     const child = childPos.individual;
+
+                    // MZ twins: horizontal bar
                     if (child.mztwin && !processedTwins.has(child.mztwin)) {
                         processedTwins.add(child.mztwin);
                         const twins = getTwins(child, this.dataset);
@@ -1134,6 +1139,41 @@ export class PedigreeRenderer {
                             const twinBarY =
                                 (sibshipY + (childPos.y - symbolSize / 2)) / 2;
                             drawTwinBar(svg, twinMinX, twinMaxX, twinBarY);
+                        }
+                    }
+
+                    // DZ twins: diagonal diverging lines
+                    if (child.dztwin && !processedDzTwins.has(child.dztwin)) {
+                        processedDzTwins.add(child.dztwin);
+                        const dzTwins = getDzTwins(child, this.dataset);
+                        if (dzTwins.length > 0) {
+                            const allDzTwinPositions = [
+                                childPos,
+                                ...dzTwins
+                                    .map(t => this.nodePositions.get(t.name)!)
+                                    .filter(Boolean),
+                            ];
+
+                            // Draw diagonal lines for each pair of DZ twins
+                            // Bennett standard: diagonal lines from sibship line to each twin
+                            for (let i = 0; i < allDzTwinPositions.length; i++) {
+                                for (let j = i + 1; j < allDzTwinPositions.length; j++) {
+                                    const twin1 = allDzTwinPositions[i];
+                                    const twin2 = allDzTwinPositions[j];
+
+                                    // Connection point between sibship line and twins
+                                    const connectionY = sibshipY + (twin1.y - symbolSize / 2 - sibshipY) / 3;
+
+                                    drawDzTwinLines(
+                                        svg,
+                                        twin1.x,
+                                        twin1.y - symbolSize / 2, // Top of symbol
+                                        twin2.x,
+                                        twin2.y - symbolSize / 2, // Top of symbol
+                                        connectionY, // Point on path between sibship and symbols
+                                    );
+                                }
+                            }
                         }
                     }
                 }

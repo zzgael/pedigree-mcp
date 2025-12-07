@@ -2837,6 +2837,77 @@ describe('PedigreeRenderer', () => {
             expect(svg).toContain('twin2');
         });
 
+        it('should render DZ twins with diagonal diverging lines (TDD)', () => {
+            // Bennett 2008: DZ twins have diagonal lines from a point on sibship line
+            const dataset: Individual[] = [
+                { name: 'Dad', sex: 'M', top_level: true },
+                { name: 'Mom', sex: 'F', top_level: true },
+                { name: 'DZTwin1', sex: 'M', mother: 'Mom', father: 'Dad', dztwin: 'dz1', age: 8 },
+                { name: 'DZTwin2', sex: 'F', mother: 'Mom', father: 'Dad', dztwin: 'dz1', age: 8 },
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            renderer.calculatePositions();
+            const svg = renderer.renderSvg();
+
+            // Get twin positions
+            const twin1Pos = renderer.nodePositions.get('DZTwin1');
+            const twin2Pos = renderer.nodePositions.get('DZTwin2');
+
+            // Extract all lines from SVG
+            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            let match;
+            while ((match = lineRegex.exec(svg)) !== null) {
+                lines.push({
+                    x1: parseFloat(match[1]),
+                    y1: parseFloat(match[2]),
+                    x2: parseFloat(match[3]),
+                    y2: parseFloat(match[4]),
+                });
+            }
+
+            // Bennett 2008: DZ twins should have diagonal lines from a common point
+            // The lines should NOT be vertical (like regular siblings)
+            // They should diverge from a point on the sibship line
+
+            // Find diagonal lines that connect to the twins
+            // A diagonal line has significant X difference (not vertical)
+            const diagonalLines = lines.filter(line => {
+                const dx = Math.abs(line.x2 - line.x1);
+                const dy = Math.abs(line.y2 - line.y1);
+
+                // Diagonal: dx > 10px (not vertical), dy > 10px (not horizontal)
+                const isDiagonal = dx > 10 && dy > 10;
+
+                // Check if line connects to either twin's position
+                const connectsToTwin1 = Math.abs(line.x2 - twin1Pos.x) < 5 || Math.abs(line.x1 - twin1Pos.x) < 5;
+                const connectsToTwin2 = Math.abs(line.x2 - twin2Pos.x) < 5 || Math.abs(line.x1 - twin2Pos.x) < 5;
+
+                return isDiagonal && (connectsToTwin1 || connectsToTwin2);
+            });
+
+            // CRITICAL: Should have at least 2 diagonal lines (one to each twin)
+            // Currently failing - DZ twins only have vertical lines like regular siblings
+            expect(diagonalLines.length).toBeGreaterThanOrEqual(2);
+
+            // Verify the diagonal lines share a common point (the convergence point on sibship line)
+            if (diagonalLines.length >= 2) {
+                const line1 = diagonalLines[0];
+                const line2 = diagonalLines[1];
+
+                // The lines should meet at a common point (sibship line)
+                // Check if either endpoint is shared
+                const sharedPoint =
+                    (Math.abs(line1.x1 - line2.x1) < 5 && Math.abs(line1.y1 - line2.y1) < 5) ||
+                    (Math.abs(line1.x1 - line2.x2) < 5 && Math.abs(line1.y1 - line2.y2) < 5) ||
+                    (Math.abs(line1.x2 - line2.x1) < 5 && Math.abs(line1.y2 - line2.y1) < 5) ||
+                    (Math.abs(line1.x2 - line2.x2) < 5 && Math.abs(line1.y2 - line2.y2) < 5);
+
+                expect(sharedPoint).toBe(true);
+            }
+        });
+
         it('should render no children by choice indicator for childless couple', () => {
             const dataset: Individual[] = [
                 { name: 'husband', sex: 'M', top_level: true, no_children_by_choice: true },

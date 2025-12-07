@@ -568,6 +568,41 @@ export function drawTwinBar(
 }
 
 /**
+ * Draw DZ twin diagonal lines (inverted V from sibship line to twins)
+ * Bennett standard: DZ twins have diagonal lines converging to a point on sibship line
+ */
+export function drawDzTwinLines(
+    svg: SVGSelection,
+    twin1X: number,
+    twin1Y: number,
+    twin2X: number,
+    twin2Y: number,
+    sibshipY: number,
+): void {
+    // Calculate the convergence point (midpoint between twins on sibship line)
+    const convergenceX = (twin1X + twin2X) / 2;
+    const convergenceY = sibshipY;
+
+    // Draw diagonal line from convergence point to twin1
+    svg.append('line')
+        .attr('x1', convergenceX)
+        .attr('y1', convergenceY)
+        .attr('x2', twin1X)
+        .attr('y2', twin1Y)
+        .attr('stroke', '#333')
+        .attr('stroke-width', 2);
+
+    // Draw diagonal line from convergence point to twin2
+    svg.append('line')
+        .attr('x1', convergenceX)
+        .attr('y1', convergenceY)
+        .attr('x2', twin2X)
+        .attr('y2', twin2Y)
+        .attr('stroke', '#333')
+        .attr('stroke-width', 2);
+}
+
+/**
  * Draw carrier indicator (dot in center of symbol)
  * Bennett standard: small filled dot in center indicates carrier status
  */
