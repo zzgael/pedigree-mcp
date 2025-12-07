@@ -40,12 +40,29 @@ Add to your MCP client configuration (e.g., Claude Desktop):
 }
 ```
 
-**Build from source (optional):**
+### Build from Source
+
+If you prefer to build from source:
+
 ```bash
 git clone https://github.com/zzgael/pedigree-mcp.git
 cd pedigree-mcp
 npm install
 npm run build
+```
+
+Then use in your MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "pedigree": {
+      "command": "node",
+      "args": ["/absolute/path/to/pedigree-mcp/dist/index.js"],
+      "env": {}
+    }
+  }
+}
 ```
 
 ## Features
