@@ -678,11 +678,13 @@ export function drawTerminationSymbol(
 
     // Bennett 2008: Ectopic pregnancy shown as triangle with forward slash
     if (ectopic) {
+        // Draw diagonal slash from lower-left to upper-right through triangle center
+        // Using 0.85 multiplier to stay slightly inside triangle edges
         g.append('line')
-            .attr('x1', -half * 0.6)
-            .attr('y1', half * 0.6)
-            .attr('x2', half * 0.6)
-            .attr('y2', -half * 0.6)
+            .attr('x1', -half * 0.85)
+            .attr('y1', half * 0.85)
+            .attr('x2', half * 0.85)
+            .attr('y2', -half * 0.85)
             .attr('stroke', '#D5494A')
             .attr('stroke-width', 2);
     }

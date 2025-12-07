@@ -3107,5 +3107,70 @@ describe('PedigreeRenderer', () => {
             // Currently failing with 140px misalignment
             expect(Math.abs(marriage2ChildrenMidX - marriage2PartnershipMidX)).toBeLessThan(1);
         });
+
+        it('should render child of serial marriage with proper vertical line (TDD)', () => {
+            // Reproduces complex pedigree issue with Cousin3
+            // GM has two marriages: GF (first) with MANY children, and GF2 (second) with one child
+            // Aunt3 is child of GM + GF2
+            // Cousin3 is child of Aunt3 + Uncle3
+            const dataset: Individual[] = [
+                // Exact reproduction of complex pedigree structure
+                // Generation 0
+                { name: 'GGF1', sex: 'M', top_level: true },
+                { name: 'GGM1', sex: 'F', top_level: true },
+                { name: 'GGF2', sex: 'M', top_level: true },
+                { name: 'GGM2', sex: 'F', top_level: true },
+
+                // Generation 1
+                { name: 'GF', sex: 'M', mother: 'GGM1', father: 'GGF1' },
+                { name: 'GM', sex: 'F', mother: 'GGM2', father: 'GGF2' },
+                { name: 'GF2', sex: 'M', top_level: true },
+
+                // Generation 2
+                { name: 'Uncle1', sex: 'M', mother: 'GM', father: 'GF' },
+                { name: 'Aunt1', sex: 'F', top_level: true },
+                { name: 'Uncle2', sex: 'M', mother: 'GM', father: 'GF' },
+                { name: 'Aunt2', sex: 'F', top_level: true },
+                { name: 'Father', sex: 'M', mother: 'GM', father: 'GF' },
+                { name: 'Mother1', sex: 'F', top_level: true },
+                { name: 'Mother2', sex: 'F', top_level: true },
+                { name: 'Aunt3', sex: 'F', mother: 'GM', father: 'GF2' }, // Second marriage child
+                { name: 'Uncle3', sex: 'M', top_level: true },
+
+                // Generation 3
+                { name: 'Cousin1', sex: 'F', mother: 'Aunt1', father: 'Uncle1' },
+                { name: 'Cousin2', sex: 'M', mother: 'Aunt2', father: 'Uncle2' },
+                { name: 'Child1', sex: 'F', mother: 'Mother1', father: 'Father' },
+                { name: 'Child2', sex: 'M', mother: 'Mother1', father: 'Father' },
+                { name: 'MZTwin1', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A' },
+                { name: 'MZTwin2', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A' },
+                { name: 'Cousin3', sex: 'F', mother: 'Aunt3', father: 'Uncle3' }, // Problem child
+            ];
+
+            const renderer = new PedigreeRenderer(dataset) as any;
+            renderer.calculatePositions();
+
+            const ggf2Pos = renderer.nodePositions.get('GGF2');
+            const ggm2Pos = renderer.nodePositions.get('GGM2');
+            const gmPos = renderer.nodePositions.get('GM');
+            const aunt3Pos = renderer.nodePositions.get('Aunt3');
+            const uncle3Pos = renderer.nodePositions.get('Uncle3');
+            const cousin3Pos = renderer.nodePositions.get('Cousin3');
+
+            // ISSUE 1: GGF2/GGM2 partnership should be centered above GM
+            // Currently failing: GM is 140px off from partnership midpoint
+            const ggParentshipMidX = (ggf2Pos.x + ggm2Pos.x) / 2;
+            expect(Math.abs(ggParentshipMidX - gmPos.x)).toBeLessThan(1);
+
+            // ISSUE 2: Aunt3/Uncle3 partnership should be centered above Cousin3
+            // Currently failing: Cousin3 is 350px off from partnership midpoint
+            const aunt3PartnershipMidX = (aunt3Pos.x + uncle3Pos.x) / 2;
+            expect(Math.abs(aunt3PartnershipMidX - cousin3Pos.x)).toBeLessThan(1);
+
+            // ISSUE 3: Cousin3 should be directly below the Aunt3/Uncle3 partnership line
+            // Not offset to the left
+            expect(cousin3Pos.x).toBeGreaterThan(Math.min(aunt3Pos.x, uncle3Pos.x));
+            expect(cousin3Pos.x).toBeLessThan(Math.max(aunt3Pos.x, uncle3Pos.x));
+        });
     });
 });
