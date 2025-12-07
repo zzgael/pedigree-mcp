@@ -724,24 +724,28 @@ export function drawDivorcedIndicator(
 /**
  * Draw consultand indicator (double arrow pointing to individual)
  * Bennett standard: consultand is the person seeking genetic counseling (different from proband)
+ * @param probandPresent - If true, offset to bottom-right to avoid overlap with proband arrow
  */
-export function drawConsultandIndicator(g: GroupSelection, symbolSize: number): void {
+export function drawConsultandIndicator(g: GroupSelection, symbolSize: number, probandPresent = false): void {
     const arrowSize = symbolSize / 3;
     const offset = symbolSize * 0.7;
+
+    // If proband is also present, position consultand at bottom-right instead of bottom-left
+    const xMultiplier = probandPresent ? 1 : -1;
 
     // First arrow
     g.append('polygon')
         .attr(
             'points',
-            `${-offset - arrowSize},${offset} ${-offset},${offset + arrowSize} ${-offset - arrowSize / 2},${offset}`,
+            `${xMultiplier * (offset + arrowSize)},${offset} ${xMultiplier * offset},${offset + arrowSize} ${xMultiplier * (offset + arrowSize / 2)},${offset}`,
         )
         .attr('fill', '#333');
 
-    // Second arrow (closer to symbol)
+    // Second arrow (farther from symbol)
     g.append('polygon')
         .attr(
             'points',
-            `${-offset - arrowSize * 1.7},${offset} ${-offset - arrowSize * 0.7},${offset + arrowSize} ${-offset - arrowSize * 1.2},${offset}`,
+            `${xMultiplier * (offset + arrowSize * 1.7)},${offset} ${xMultiplier * (offset + arrowSize * 0.7)},${offset + arrowSize} ${xMultiplier * (offset + arrowSize * 1.2)},${offset}`,
         )
         .attr('fill', '#333');
 }

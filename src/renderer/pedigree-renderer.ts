@@ -1519,7 +1519,8 @@ export class PedigreeRenderer {
             }
             if (ind.consultand) {
                 // Bennett standard: consultand (double arrow) - person seeking counseling
-                drawConsultandIndicator(g as any, symbolSize);
+                // If both proband and consultand, offset consultand to bottom-right
+                drawConsultandIndicator(g as any, symbolSize, ind.proband);
             }
             // Bennett standard: adoption indicators
             if (ind.noparents || ind.adoption_type === 'in') {
