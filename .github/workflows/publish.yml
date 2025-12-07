@@ -1,56 +1,44 @@
-name: Publish to npm
+name: Publish Package
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [created]
 
 jobs:
-  test:
+  publish-npm:
+    name: Publish to npm
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Run tests
-        run: npm test
-
-  publish:
-    needs: test
+  publish-github:
+    name: Publish to GitHub Packages  
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
-
+      packages: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Update npm to latest
-        run: npm install -g npm@latest
-
-      - name: Check npm version
-        run: npm --version
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Publish to npm with OIDC
-        run: npm publish --provenance --access public
+          node-version: 18
+          registry-url: https://npm.pkg.github.com/
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      # Temporarily change package name to scoped for GitHub Packages
+      - run: |
+          node -e "const pkg = require('./package.json'); pkg.name = '@zzgael/pedigree-mcp'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
