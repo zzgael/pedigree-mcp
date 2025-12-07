@@ -1,6 +1,6 @@
 {
   "name": "pedigree-mcp",
-  "version": "1.0.12",
+  "version": "1.1.0",
   "description": "MCP server for generating pedigree tree diagrams as PNG images using Bennett 2008 NSGC standard",
   "author": "zzgael",
   "license": "MIT",
