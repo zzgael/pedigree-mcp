@@ -19,7 +19,7 @@ jobs:
       - run: npm test
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
   publish-github:
     name: Publish to GitHub Packages  
