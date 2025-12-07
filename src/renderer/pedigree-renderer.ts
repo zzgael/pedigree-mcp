@@ -391,50 +391,104 @@ export class PedigreeRenderer {
             let currentX = padding;
 
             // Phase 1: Position partnerships with children (centered above children)
-            for (const partnership of this.partnerships) {
+            // CRITICAL: Process partnerships in spatial order (left to right) to avoid conflicts
+            const partnershipsWithChildren = this.partnerships
+                .filter(p => p.children.length > 0)
+                .map(partnership => {
+                    const childPositions = partnership.children
+                        .map(c => this.nodePositions.get(c))
+                        .filter(p => p !== undefined);
+                    const childMidX = childPositions.length > 0
+                        ? childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length
+                        : Infinity;
+                    return { partnership, childMidX, childPositions };
+                })
+                .sort((a, b) => a.childMidX - b.childMidX); // Sort left to right
+
+            for (const { partnership, childMidX, childPositions } of partnershipsWithChildren) {
                 const p1 = individuals.find(i => i.name === partnership.partner1);
                 const p2 = individuals.find(i => i.name === partnership.partner2);
 
                 if (!p1 || !p2) continue;
-                if (partnership.children.length === 0) continue;
 
                 // Skip if BOTH partners already positioned
                 if (positioned.has(p1.name) && positioned.has(p2.name)) continue;
 
-                // Get child positions
-                const childPositions = partnership.children
-                    .map(c => this.nodePositions.get(c))
-                    .filter((p): p is { individual: Individual; x: number; y: number; generation: number } => p !== undefined);
-
                 if (childPositions.length > 0) {
-                    // Calculate midpoint of children
-                    const childMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
+                    // childMidX already calculated above in sort
 
                     // Position partners symmetrically around midpoint
                     // If one partner already positioned (serial marriage), use their position as constraint
                     let p1X: number, p2X: number;
 
                     if (positioned.has(p1.name)) {
-                        // p1 already positioned, calculate p2 to maintain centering
+                        // p1 already positioned (serial marriage), calculate p2 to maintain centering
                         const existingP1 = this.nodePositions.get(p1.name)!;
                         p1X = existingP1.x;
-                        // Ideally p2X = 2 * childMidX - p1X to maintain symmetry, but respect spacing
-                        p2X = Math.max(p1X + minNodeSpacing, 2 * childMidX - p1X);
+                        // CRITICAL: Use ideal symmetric position even if it violates minNodeSpacing
+                        // This is necessary for serial marriages where child is far from the existing partner
+                        p2X = 2 * childMidX - p1X;
                     } else if (positioned.has(p2.name)) {
-                        // p2 already positioned, calculate p1
+                        // p2 already positioned (serial marriage), calculate p1 to maintain centering
                         const existingP2 = this.nodePositions.get(p2.name)!;
                         p2X = existingP2.x;
-                        p1X = Math.min(p2X - minNodeSpacing, 2 * childMidX - p2X);
+                        // CRITICAL: Use ideal symmetric position even if it violates minNodeSpacing
+                        p1X = 2 * childMidX - p2X;
                     } else {
                         // Neither positioned yet - normal case
                         p1X = childMidX - minNodeSpacing / 2;
                         p2X = childMidX + minNodeSpacing / 2;
                     }
 
-                    // Check for conflicts with already positioned individuals in this generation
-                    // If conflict detected, shift the entire partnership (maintaining spacing)
-                    const existingPositions = Array.from(this.nodePositions.values())
-                        .filter(pos => pos.generation === gen);
+                    // Check for exact overlaps (same position) and shift partnership + children together
+                    // This handles the case where children are exactly minNodeSpacing apart
+                    // causing parent partnerships to overlap at the boundary
+                    const overlapTolerance = 0.1; // Less than 1px
+                    for (const [existingName, existingPos] of this.nodePositions) {
+                        if (existingPos.generation !== gen) continue;
+
+                        // Check if p1X or p2X would overlap with existing position
+                        if (!positioned.has(p1.name) && Math.abs(p1X - existingPos.x) < overlapTolerance) {
+                            // Shift partnership + children to maintain centering
+                            const shift = minNodeSpacing / 2;
+                            p1X += shift;
+                            p2X += shift;
+                            // CRITICAL: Also shift all children to maintain centering
+                            for (const childName of partnership.children) {
+                                const childPos = this.nodePositions.get(childName);
+                                if (childPos) {
+                                    childPos.x += shift;
+                                }
+                            }
+                            break; // Only fix one overlap at a time
+                        }
+                        if (!positioned.has(p2.name) && Math.abs(p2X - existingPos.x) < overlapTolerance) {
+                            // Shift partnership + children to maintain centering
+                            const shift = minNodeSpacing / 2;
+                            p1X += shift;
+                            p2X += shift;
+                            // CRITICAL: Also shift all children to maintain centering
+                            for (const childName of partnership.children) {
+                                const childPos = this.nodePositions.get(childName);
+                                if (childPos) {
+                                    childPos.x += shift;
+                                }
+                            }
+                            break; // Only fix one overlap at a time
+                        }
+                    }
+
+                    // CRITICAL: For partnerships with children, DO NOT shift away from centering
+                    // Even if there are conflicts, maintaining centering above children is more important
+                    // Overlaps will be handled by adjusting child spacing in Phase 4
+                    // TODO: Remove conflict detection or handle it by adjusting child positions
+                    const SKIP_CONFLICT_DETECTION_FOR_CHILDREN = true;
+
+                    if (!SKIP_CONFLICT_DETECTION_FOR_CHILDREN) {
+                        // Check for conflicts with already positioned individuals in this generation
+                        // If conflict detected, shift the entire partnership (maintaining spacing)
+                        const existingPositions = Array.from(this.nodePositions.values())
+                            .filter(pos => pos.generation === gen);
 
                     let needsShift = true;
                     while (needsShift) {
@@ -501,6 +555,7 @@ export class PedigreeRenderer {
                             }
                         }
                     }
+                    } // End of SKIP_CONFLICT_DETECTION_FOR_CHILDREN check
 
                     // Set positions (only if not already set)
                     if (!positioned.has(p1.name)) {
@@ -569,9 +624,26 @@ export class PedigreeRenderer {
                 });
 
                 if (childrenInThisGen.length > 0) {
-                    // Position children left-to-right, centered as a group
+                    // Check if both parents are already positioned
+                    const p1Pos = this.nodePositions.get(partnership.partner1);
+                    const p2Pos = this.nodePositions.get(partnership.partner2);
+
+                    let groupStartX: number;
+
+                    if (p1Pos && p2Pos) {
+                        // Both parents positioned - center children below parents
+                        const parentMidX = (p1Pos.x + p2Pos.x) / 2;
+                        const groupWidth = (childrenInThisGen.length - 1) * minNodeSpacing;
+                        groupStartX = parentMidX - groupWidth / 2;
+                        console.log(`Phase 4 centering: ${childrenInThisGen.join(',')} below ${partnership.partner1}/${partnership.partner2} (gen ${p1Pos.generation}/${p2Pos.generation}) at ${parentMidX}`);
+                    } else {
+                        // Parents not positioned yet - use currentX
+                        groupStartX = currentX;
+                        console.log(`Phase 4 NOT centering: ${childrenInThisGen.join(',')} - ${partnership.partner1} (${!!p1Pos}) / ${partnership.partner2} (${!!p2Pos})`);
+                    }
+
+                    // Position children left-to-right
                     const groupWidth = (childrenInThisGen.length - 1) * minNodeSpacing;
-                    const groupStartX = currentX;
 
                     for (let i = 0; i < childrenInThisGen.length; i++) {
                         const childName = childrenInThisGen[i];
@@ -582,7 +654,7 @@ export class PedigreeRenderer {
                     }
 
                     // Move currentX past this family group + extra spacing for next partnership
-                    currentX = groupStartX + groupWidth + minNodeSpacing * 2;
+                    currentX = Math.max(currentX, groupStartX + groupWidth + minNodeSpacing * 2);
                 }
             }
 
@@ -593,7 +665,15 @@ export class PedigreeRenderer {
                 this.nodePositions.set(ind.name, { individual: ind, x: currentX, y, generation: gen });
                 currentX += minNodeSpacing;
                 positioned.add(ind.name);
+                console.log(`Phase 5 positioned: ${ind.name} at ${currentX - minNodeSpacing}`);
             }
+
+            // Debug: Show what's positioned at end of this generation
+            console.log(`\n=== End of Gen ${gen} ===`);
+            const genPositioned = Array.from(this.nodePositions.values())
+                .filter(p => p.generation === gen)
+                .map(p => p.individual.name);
+            console.log(`Positioned in Gen ${gen}: ${genPositioned.join(', ')}`);
         }
 
         // Center entire diagram on canvas
@@ -601,6 +681,79 @@ export class PedigreeRenderer {
 
         // Validate: no two individuals should have the same position
         this.validateNoOverlappingPositions();
+    }
+
+    /**
+     * Backward pass to center partnerships above their children
+     * Processes generations in reverse order (bottom-up)
+     * This ensures parents are centered even when children were positioned after them
+     */
+    private centerPartnershipsAboveChildren(minNodeSpacing: number): void {
+        // Get all generations in reverse order
+        const allGenerations = Array.from(this.nodePositions.values())
+            .map(pos => pos.generation);
+        const maxGen = Math.max(...allGenerations);
+        const minGen = Math.min(...allGenerations);
+
+        // Process generations from bottom to top (children first, then parents)
+        for (let gen = maxGen; gen >= minGen; gen--) {
+            const genIndividuals = Array.from(this.nodePositions.values())
+                .filter(pos => pos.generation === gen);
+
+            // Find all partnerships where both partners are in this generation
+            for (const partnership of this.partnerships) {
+                const p1Pos = this.nodePositions.get(partnership.partner1);
+                const p2Pos = this.nodePositions.get(partnership.partner2);
+
+                if (!p1Pos || !p2Pos) continue;
+                if (p1Pos.generation !== gen || p2Pos.generation !== gen) continue;
+                if (partnership.children.length === 0) continue;
+
+                // Get child positions
+                const childPositions = partnership.children
+                    .map(c => this.nodePositions.get(c))
+                    .filter((p): p is { individual: Individual; x: number; y: number; generation: number } => p !== undefined);
+
+                if (childPositions.length === 0) continue;
+
+                // Calculate ideal midpoint above children
+                const childMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
+                const currentMidX = (p1Pos.x + p2Pos.x) / 2;
+
+                // If already centered (within tolerance), skip
+                if (Math.abs(currentMidX - childMidX) < 1) continue;
+
+                // Calculate shift needed to center partnership
+                const shiftNeeded = childMidX - currentMidX;
+                const newP1X = p1Pos.x + shiftNeeded;
+                const newP2X = p2Pos.x + shiftNeeded;
+
+                // Check for collisions with other individuals in same generation
+                let hasCollision = false;
+                for (const otherPos of genIndividuals) {
+                    // Skip self
+                    if (otherPos.individual.name === p1Pos.individual.name ||
+                        otherPos.individual.name === p2Pos.individual.name) {
+                        continue;
+                    }
+
+                    // Check if shift would cause collision
+                    const distToP1 = Math.abs(otherPos.x - newP1X);
+                    const distToP2 = Math.abs(otherPos.x - newP2X);
+
+                    if (distToP1 < minNodeSpacing || distToP2 < minNodeSpacing) {
+                        hasCollision = true;
+                        break;
+                    }
+                }
+
+                // Only shift if no collisions
+                if (!hasCollision) {
+                    p1Pos.x = newP1X;
+                    p2Pos.x = newP2X;
+                }
+            }
+        }
     }
 
     /**
