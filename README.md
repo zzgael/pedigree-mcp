@@ -26,41 +26,8 @@
 
 ## Installation
 
-### Prerequisites
-- Node.js 18+
-- npm or pnpm
+Add to your MCP client configuration (e.g., Claude Desktop):
 
-### Build from Source
-
-```bash
-# Clone and navigate to the directory
-cd pedigree-mcp
-
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-```
-
-### MCP Client Configuration
-
-Add to your MCP client configuration (e.g., Claude Desktop, GPT Workbench):
-
-**Using stdio transport:**
-```json
-{
-  "mcpServers": {
-    "pedigree": {
-      "command": "node",
-      "args": ["/path/to/pedigree-mcp/dist/index.js"],
-      "env": {}
-    }
-  }
-}
-```
-
-**Using npx (if published to npm):**
 ```json
 {
   "mcpServers": {
@@ -71,6 +38,14 @@ Add to your MCP client configuration (e.g., Claude Desktop, GPT Workbench):
     }
   }
 }
+```
+
+**Build from source (optional):**
+```bash
+git clone https://github.com/zzgael/pedigree-mcp.git
+cd pedigree-mcp
+npm install
+npm run build
 ```
 
 ## Features

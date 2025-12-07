@@ -12,15 +12,23 @@
   "bugs": {
     "url": "https://github.com/zzgael/pedigree-mcp/issues"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "pedigree",
     "genetics",
     "family-tree",
     "medical",
     "bennett-standard",
+    "nsgc",
     "png",
-    "svg"
+    "svg",
+    "healthcare",
+    "genetic-counseling"
   ],
   "type": "module",
   "main": "dist/index.js",
