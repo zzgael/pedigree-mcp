@@ -2,7 +2,7 @@ export const PEDIGREEJS_DOCUMENTATION = `# Pedigree Generator
 
 Generates PNG pedigree trees following Bennett 2008 NSGC standard notation.
 
-## ⚠️ LIMITS: name≤7chars, display_name≤13chars
+## ⚠️ Auto-Truncation: name truncated to 7 chars, display_name to 13 chars
 
 ## Individual Properties
 
@@ -16,6 +16,12 @@ Generates PNG pedigree trees following Bennett 2008 NSGC standard notation.
 1. If an individual has parents in the pedigree, use \`mother\`/\`father\` - NOT \`top_level: true\`
 2. Siblings without partners still need \`mother\`/\`father\` to connect them to the family tree
 3. Married-in spouses (spouse's parents not shown) use \`top_level: true\` - they connect via having children together
+
+**Edge Cases:**
+- **Half-siblings:** Same mother, different fathers: \`{"name":"s1","mother":"mom","father":"dad1"}\` and \`{"name":"s2","mother":"mom","father":"dad2"}\`
+- **Unknown parent:** Omit parent field (don't use top_level): \`{"name":"child","mother":"mom"}\` (father unknown)
+- **Multiple conditions:** Displays as pie slices (female) or quadrants (male): \`conditions:[{"name":"Breast cancer","age":42},{"name":"Ovarian cancer","age":55}]\`
+- **Consanguinity:** Auto-detected from shared ancestors, or manually specify: \`consanguinity_degree:"1st cousins"\`
 
 **Display:** \`display_name\`, \`proband\` (index case), \`age\`, \`yob\`, \`status\` (0=alive, 1=deceased)
 
@@ -49,6 +55,33 @@ Use \`conditions\` array with any disease/condition name:
 - \`terminated: true\` - Small triangle for PREGNANCY LOSS ONLY (stillbirth/miscarriage/termination). ⚠️ NEVER use for living individuals!
 - \`divorced: true\` - Hash marks on partnership line
 
+**Adoption:**
+- \`noparents: true\` - Adopted IN (shows brackets [ ])
+- \`adoption_type: "out"\` - Placed for adoption (arrow + "OUT" label)
+- \`adoption_type: "foster"\` - Foster placement (dashed brackets)
+
+**Gender Diversity (Bennett 2022):**
+- \`gender\`: "M"|"F"|"NB"|"GNC"|"TM"|"TF" - Gender identity (shows marker if ≠ sex)
+- \`sex_assigned_at_birth\`: "M"|"F"|"U" - For trans individuals
+
+**ART Conception:**
+- \`art_type: "egg_donor"\` - E marker (blue)
+- \`art_type: "sperm_donor"\` - S marker (blue)
+- \`art_type: "surrogate"\` - GC marker (gestational carrier, blue)
+- \`art_type: "embryo_donor"\` - Em marker (blue)
+
+**Additional Indicators:**
+- \`birth_order: 1\` - Displays as Roman numeral (I, II, III)
+- \`consultand: true\` - Person seeking counseling (double arrow, distinct from proband)
+- \`obligate_carrier: true\` - Inferred carrier (outlined dot)
+- \`anticipation: true\` - Genetic anticipation (asterisk *)
+- \`infertility: true\` - Infertility (crossed lines X)
+- \`no_children_by_choice: true\` - Intentional childlessness (line through offspring)
+- \`ectopic: true\` - Ectopic pregnancy (triangle with diagonal slash)
+- \`pregnancy_outcome\`: "miscarriage" (SAB label) | "stillbirth" (SB label) | "induced_termination" (TOP label)
+- \`gene_copy_number\`: "heterozygous" (Het) | "homozygous" (Hom) | "compound_heterozygous" (CH)
+- \`consanguinity_degree\`: "1st cousins" - Manual override for auto-detected consanguinity
+
 ## Gene Tests (Labels Only - NO Color Fill)
 
 ⚠️ **Gene tests only add text labels (e.g., "BRCA1+"), NOT colored fills.**
@@ -65,13 +98,14 @@ To show both a gene test label AND a colored condition fill, use BOTH properties
 \`\`\`
 Result: Pink/red fill for breast cancer + "BRCA1+" label below.
 
-Pattern: \`{gene}_gene_test: {type, result}\`
+Pattern: \`{gene}_gene_test: {type, result}\` - **ANY gene supported**
 
-Genes: brca1, brca2, palb2, atm, chek2, rad51d, rad51c, brip1
+**Common genes:** brca1, brca2, palb2, atm, chek2, rad51d, rad51c, brip1
+**Custom genes:** htt_gene_test, tp53_gene_test, apoe_gene_test, or ANY gene
 
-Type: "-"=untested, "S"=screening, "T"=direct | Result: "-"=N/A, "P"=positive, "N"=negative
+Type: "-"=untested, "S"=screening, "T"=tested | Result: "-"=N/A, "P"=positive, "N"=negative
 
-Labels shown as: "BRCA1+", "BRCA2-"
+Labels shown as: "BRCA1+", "HTT-", "TP53+"
 
 ## Visual Features
 
