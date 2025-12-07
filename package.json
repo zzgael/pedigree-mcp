@@ -44,7 +44,8 @@
     "test:integration": "vitest run tests/mcp-server.integration.test.ts",
     "test:watch": "vitest",
     "lint": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "lint:fix": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
+    "lint:fix": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "examples": "npm run build && npx tsx examples/generate-all-scenarios.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

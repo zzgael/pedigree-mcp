@@ -226,6 +226,10 @@ interface Individual {
 
 ## Examples
 
+**📸 [View All 21 Scenario Examples →](EXAMPLES.md)**
+
+See the full gallery of standardized pedigree scenarios demonstrating Bennett 2008/2022 compliance, including gender diversity, twins, consanguinity, ART indicators, and complex multi-generation families.
+
 ### Basic Three-Generation Pedigree
 
 ```json
