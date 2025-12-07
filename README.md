@@ -168,7 +168,7 @@ Returns comprehensive documentation about the pedigree data format. **Always cal
 
 ### `generate_pedigree`
 
-Generates a PNG image of a family pedigree tree.
+Generates a family pedigree tree in PNG or SVG format.
 
 **Parameters:**
 | Parameter | Type | Default | Description |
@@ -179,6 +179,7 @@ Generates a PNG image of a family pedigree tree.
 | `symbol_size` | `number` | 35 | Node diameter in pixels |
 | `background` | `string` | #ffffff | Background color |
 | `labels` | `string[]` | ['age'] | Attributes to display |
+| `format` | `'png' \| 'svg'` | 'png' | Output format: png (base64 image) or svg (XML text) |
 
 ## Data Format
 

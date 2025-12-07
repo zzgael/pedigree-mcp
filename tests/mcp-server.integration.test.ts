@@ -350,6 +350,52 @@ describe('Pedigree MCP Server Integration', () => {
             );
             expect(imageContent).toBeDefined();
         }, 30000);
+
+        it('should generate SVG when format=svg', async () => {
+            const result = await client.callTool({
+                name: 'generate_pedigree',
+                arguments: {
+                    dataset: [
+                        { name: 'f', sex: 'M', top_level: true },
+                        { name: 'm', sex: 'F', top_level: true },
+                        {
+                            name: 'c',
+                            sex: 'F',
+                            mother: 'm',
+                            father: 'f',
+                            proband: true,
+                        },
+                    ],
+                    format: 'svg',
+                },
+            });
+
+            expect(result.content).toBeDefined();
+            expect(result.content.length).toBe(2);
+
+            // Should have text content with metadata mentioning SVG
+            const metadataContent = result.content.find(
+                (c: any) => c.type === 'text' && c.text.includes('SVG'),
+            );
+            expect(metadataContent).toBeDefined();
+            expect(metadataContent?.text).toContain('Individuals: 3');
+            expect(metadataContent?.text).toContain('Generations: 2');
+
+            // Should have SVG content as text (not image)
+            const svgContent = result.content.find(
+                (c: any) => c.type === 'text' && c.text.includes('<svg'),
+            );
+            expect(svgContent).toBeDefined();
+            expect(svgContent?.text).toContain('</svg>');
+            expect(svgContent?.text).toContain('<circle'); // Female symbol
+            expect(svgContent?.text).toContain('<rect'); // Male symbol
+
+            // Should NOT have image content
+            const imageContent = result.content.find(
+                (c: any) => c.type === 'image',
+            );
+            expect(imageContent).toBeUndefined();
+        }, 30000);
     });
 
     describe('full workflow', () => {

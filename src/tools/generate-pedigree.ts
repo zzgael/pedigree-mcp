@@ -8,10 +8,12 @@ export interface GeneratePedigreeInput {
     symbol_size?: number;
     background?: string;
     labels?: string[];
+    format?: 'png' | 'svg';
 }
 
 export interface GeneratePedigreeOutput {
-    image_base64: string;
+    image_base64?: string;
+    svg_string?: string;
     metadata: {
         width: number;
         height: number;
@@ -46,7 +48,6 @@ export async function generatePedigree(
     };
 
     const renderer = new PedigreeRenderer(input.dataset, options);
-    const pngBuffer = await renderer.render();
 
     // Calculate generation count
     const generations = new Set<number>();
@@ -74,13 +75,29 @@ export async function generatePedigree(
         }
     }
 
-    return {
-        image_base64: pngBuffer.toString('base64'),
-        metadata: {
-            width: options.width || 800,
-            height: options.height || 600,
-            individual_count: input.dataset.length,
-            generation_count: generations.size,
-        },
-    };
+    const format = input.format || 'png';
+
+    if (format === 'svg') {
+        const svgString = renderer.renderSvg();
+        return {
+            svg_string: svgString,
+            metadata: {
+                width: options.width || 800,
+                height: options.height || 600,
+                individual_count: input.dataset.length,
+                generation_count: generations.size,
+            },
+        };
+    } else {
+        const pngBuffer = await renderer.render();
+        return {
+            image_base64: pngBuffer.toString('base64'),
+            metadata: {
+                width: options.width || 800,
+                height: options.height || 600,
+                individual_count: input.dataset.length,
+                generation_count: generations.size,
+            },
+        };
+    }
 }

@@ -261,4 +261,111 @@ describe('generatePedigree tool', () => {
             expect(buffer[0]).toBe(0x89);
         });
     });
+
+    describe('format parameter', () => {
+        it('should generate PNG by default when format is not specified', async () => {
+            const dataset: Individual[] = [
+                { name: 'f', sex: 'M', top_level: true },
+            ];
+
+            const result = await generatePedigree({ dataset });
+
+            expect(result.image_base64).toBeDefined();
+            expect(result.svg_string).toBeUndefined();
+            expect(result.metadata.individual_count).toBe(1);
+
+            // Verify PNG magic bytes
+            const buffer = Buffer.from(result.image_base64!, 'base64');
+            expect(buffer[0]).toBe(0x89);
+            expect(buffer[1]).toBe(0x50); // P
+            expect(buffer[2]).toBe(0x4e); // N
+            expect(buffer[3]).toBe(0x47); // G
+        });
+
+        it('should generate PNG when format=png is explicitly set', async () => {
+            const dataset: Individual[] = [
+                { name: 'f', sex: 'M', top_level: true },
+            ];
+
+            const result = await generatePedigree({ dataset, format: 'png' });
+
+            expect(result.image_base64).toBeDefined();
+            expect(result.svg_string).toBeUndefined();
+
+            // Verify PNG magic bytes
+            const buffer = Buffer.from(result.image_base64!, 'base64');
+            expect(buffer[0]).toBe(0x89);
+        });
+
+        it('should generate SVG when format=svg', async () => {
+            const dataset: Individual[] = [
+                { name: 'f', sex: 'M', top_level: true },
+                { name: 'm', sex: 'F', top_level: true },
+                { name: 'c', sex: 'F', mother: 'm', father: 'f' },
+            ];
+
+            const result = await generatePedigree({ dataset, format: 'svg' });
+
+            expect(result.svg_string).toBeDefined();
+            expect(result.image_base64).toBeUndefined();
+            expect(result.metadata.individual_count).toBe(3);
+            expect(result.metadata.generation_count).toBe(2);
+
+            // Verify SVG structure
+            expect(result.svg_string).toContain('<svg');
+            expect(result.svg_string).toContain('</svg>');
+            expect(result.svg_string).toContain('width=');
+            expect(result.svg_string).toContain('height=');
+        });
+
+        it('should generate valid SVG with conditions', async () => {
+            const dataset: Individual[] = [
+                {
+                    name: 'p',
+                    sex: 'F',
+                    top_level: true,
+                    proband: true,
+                    conditions: [{ name: 'Breast cancer', age: 45 }],
+                },
+            ];
+
+            const result = await generatePedigree({ dataset, format: 'svg' });
+
+            expect(result.svg_string).toBeDefined();
+            expect(result.svg_string).toContain('<svg');
+            expect(result.svg_string).toContain('</svg>');
+
+            // Verify it contains circle for female
+            expect(result.svg_string).toContain('<circle');
+        });
+
+        it('should respect width/height in both PNG and SVG formats', async () => {
+            const dataset: Individual[] = [
+                { name: 'solo', sex: 'M', top_level: true },
+            ];
+
+            const pngResult = await generatePedigree({
+                dataset,
+                width: 1000,
+                height: 800,
+                format: 'png',
+            });
+
+            const svgResult = await generatePedigree({
+                dataset,
+                width: 1000,
+                height: 800,
+                format: 'svg',
+            });
+
+            expect(pngResult.metadata.width).toBe(1000);
+            expect(pngResult.metadata.height).toBe(800);
+            expect(svgResult.metadata.width).toBe(1000);
+            expect(svgResult.metadata.height).toBe(800);
+
+            // SVG should contain dimensions
+            expect(svgResult.svg_string).toContain('width="1000"');
+            expect(svgResult.svg_string).toContain('height="800"');
+        });
+    });
 });

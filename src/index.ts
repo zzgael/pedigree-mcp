@@ -132,7 +132,7 @@ server.tool(
 // Tool 2: Generate Pedigree
 server.tool(
     'generate_pedigree',
-    'Generates a PNG pedigree tree (Bennett 2008 standard). IMPORTANT: Use mother/father for ALL individuals with known parents - siblings share same parents. Only use top_level:true for founders with NO known parents.',
+    'Generates a pedigree tree (Bennett 2008 standard) in PNG or SVG format. IMPORTANT: Use mother/father for ALL individuals with known parents - siblings share same parents. Only use top_level:true for founders with NO known parents.',
     {
         dataset: z
             .array(IndividualSchema)
@@ -164,6 +164,13 @@ server.tool(
             .describe(
                 'Which demographics to show: age, yob, or both. Condition and gene test labels are always shown automatically.',
             ),
+        format: z
+            .enum(['png', 'svg'])
+            .optional()
+            .default('png')
+            .describe(
+                'Output format: png (base64 image, default) or svg (XML text)',
+            ),
     },
     async params => {
         const result = await generatePedigree({
@@ -173,21 +180,39 @@ server.tool(
             symbol_size: params.symbol_size,
             background: params.background,
             labels: params.labels,
+            format: params.format,
         });
 
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: `Pedigree generated successfully!\nIndividuals: ${result.metadata.individual_count}\nGenerations: ${result.metadata.generation_count}\nDimensions: ${result.metadata.width}x${result.metadata.height}px`,
-                },
-                {
-                    type: 'image',
-                    data: result.image_base64,
-                    mimeType: 'image/png',
-                },
-            ],
-        };
+        const formatText = params.format === 'svg' ? 'SVG' : 'PNG';
+
+        if (params.format === 'svg') {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `Pedigree generated successfully (${formatText} format)!\nIndividuals: ${result.metadata.individual_count}\nGenerations: ${result.metadata.generation_count}\nDimensions: ${result.metadata.width}x${result.metadata.height}px`,
+                    },
+                    {
+                        type: 'text',
+                        text: result.svg_string!,
+                    },
+                ],
+            };
+        } else {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `Pedigree generated successfully (${formatText} format)!\nIndividuals: ${result.metadata.individual_count}\nGenerations: ${result.metadata.generation_count}\nDimensions: ${result.metadata.width}x${result.metadata.height}px`,
+                    },
+                    {
+                        type: 'image',
+                        data: result.image_base64!,
+                        mimeType: 'image/png',
+                    },
+                ],
+            };
+        }
     },
 );
 
