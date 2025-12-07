@@ -178,11 +178,19 @@ export class PedigreeRenderer {
                     const childGen = Math.max(motherGen, fatherGen) + 1;
                     generations.set(ind.name, childGen);
                     changed = true;
-                } else if (ind.mother && motherGen !== undefined && !ind.father) {
+                } else if (
+                    ind.mother &&
+                    motherGen !== undefined &&
+                    !ind.father
+                ) {
                     // Single parent (mother only)
                     generations.set(ind.name, motherGen + 1);
                     changed = true;
-                } else if (ind.father && fatherGen !== undefined && !ind.mother) {
+                } else if (
+                    ind.father &&
+                    fatherGen !== undefined &&
+                    !ind.mother
+                ) {
                     // Single parent (father only)
                     generations.set(ind.name, fatherGen + 1);
                     changed = true;
@@ -244,25 +252,31 @@ export class PedigreeRenderer {
 
                 // Check if either partner has children from OTHER partnerships (not this one)
                 // If both have other children, this is a cross-generational marriage and shouldn't be aligned
-                const p1OtherChildren = this.dataset.filter(
-                    ind => (ind.mother === p1.name || ind.father === p1.name) &&
-                           !partnership.children.includes(ind.name)
-                ).length > 0;
+                const p1OtherChildren =
+                    this.dataset.filter(
+                        ind =>
+                            (ind.mother === p1.name ||
+                                ind.father === p1.name) &&
+                            !partnership.children.includes(ind.name),
+                    ).length > 0;
 
-                const p2OtherChildren = this.dataset.filter(
-                    ind => (ind.mother === p2.name || ind.father === p2.name) &&
-                           !partnership.children.includes(ind.name)
-                ).length > 0;
+                const p2OtherChildren =
+                    this.dataset.filter(
+                        ind =>
+                            (ind.mother === p2.name ||
+                                ind.father === p2.name) &&
+                            !partnership.children.includes(ind.name),
+                    ).length > 0;
 
                 // Check if adjusting either partner would violate parent-child constraints
                 // (i.e., would place them at same generation or below their parents/above their children)
                 const p1ParentGen = Math.max(
                     p1.mother ? generations.get(p1.mother)! : -1,
-                    p1.father ? generations.get(p1.father)! : -1
+                    p1.father ? generations.get(p1.father)! : -1,
                 );
                 const p2ParentGen = Math.max(
                     p2.mother ? generations.get(p2.mother)! : -1,
-                    p2.father ? generations.get(p2.father)! : -1
+                    p2.father ? generations.get(p2.father)! : -1,
                 );
 
                 // If adjusting p1 to match p2 would place p1 at/above its parents, skip
@@ -376,7 +390,8 @@ export class PedigreeRenderer {
 
         // Adaptive vertical spacing: cap at 200px per generation to avoid excessive spacing in simple pedigrees
         const maxVerticalSpacing = 200;
-        const calculatedSpacing = (height - padding * 2) / Math.max(numGenerations - 1, 1);
+        const calculatedSpacing =
+            (height - padding * 2) / Math.max(numGenerations - 1, 1);
         const verticalSpacing = Math.min(calculatedSpacing, maxVerticalSpacing);
 
         this.generationGroups = genGroups;
@@ -398,21 +413,32 @@ export class PedigreeRenderer {
                     const childPositions = partnership.children
                         .map(c => this.nodePositions.get(c))
                         .filter(p => p !== undefined);
-                    const childMidX = childPositions.length > 0
-                        ? childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length
-                        : Infinity;
+                    const childMidX =
+                        childPositions.length > 0
+                            ? childPositions.reduce((sum, p) => sum + p.x, 0) /
+                              childPositions.length
+                            : Infinity;
                     return { partnership, childMidX, childPositions };
                 })
                 .sort((a, b) => a.childMidX - b.childMidX); // Sort left to right
 
-            for (const { partnership, childMidX, childPositions } of partnershipsWithChildren) {
-                const p1 = individuals.find(i => i.name === partnership.partner1);
-                const p2 = individuals.find(i => i.name === partnership.partner2);
+            for (const {
+                partnership,
+                childMidX,
+                childPositions,
+            } of partnershipsWithChildren) {
+                const p1 = individuals.find(
+                    i => i.name === partnership.partner1,
+                );
+                const p2 = individuals.find(
+                    i => i.name === partnership.partner2,
+                );
 
                 if (!p1 || !p2) continue;
 
                 // Skip if BOTH partners already positioned
-                if (positioned.has(p1.name) && positioned.has(p2.name)) continue;
+                if (positioned.has(p1.name) && positioned.has(p2.name))
+                    continue;
 
                 if (childPositions.length > 0) {
                     // childMidX already calculated above in sort
@@ -444,32 +470,41 @@ export class PedigreeRenderer {
                     // This handles the case where children are exactly minNodeSpacing apart
                     // causing parent partnerships to overlap at the boundary
                     const overlapTolerance = 0.1; // Less than 1px
-                    for (const [existingName, existingPos] of this.nodePositions) {
+                    for (const [existingName, existingPos] of this
+                        .nodePositions) {
                         if (existingPos.generation !== gen) continue;
 
                         // Check if p1X or p2X would overlap with existing position
-                        if (!positioned.has(p1.name) && Math.abs(p1X - existingPos.x) < overlapTolerance) {
+                        if (
+                            !positioned.has(p1.name) &&
+                            Math.abs(p1X - existingPos.x) < overlapTolerance
+                        ) {
                             // Shift partnership + children to maintain centering
                             const shift = minNodeSpacing / 2;
                             p1X += shift;
                             p2X += shift;
                             // CRITICAL: Also shift all children to maintain centering
                             for (const childName of partnership.children) {
-                                const childPos = this.nodePositions.get(childName);
+                                const childPos =
+                                    this.nodePositions.get(childName);
                                 if (childPos) {
                                     childPos.x += shift;
                                 }
                             }
                             break; // Only fix one overlap at a time
                         }
-                        if (!positioned.has(p2.name) && Math.abs(p2X - existingPos.x) < overlapTolerance) {
+                        if (
+                            !positioned.has(p2.name) &&
+                            Math.abs(p2X - existingPos.x) < overlapTolerance
+                        ) {
                             // Shift partnership + children to maintain centering
                             const shift = minNodeSpacing / 2;
                             p1X += shift;
                             p2X += shift;
                             // CRITICAL: Also shift all children to maintain centering
                             for (const childName of partnership.children) {
-                                const childPos = this.nodePositions.get(childName);
+                                const childPos =
+                                    this.nodePositions.get(childName);
                                 if (childPos) {
                                     childPos.x += shift;
                                 }
@@ -487,87 +522,127 @@ export class PedigreeRenderer {
                     if (!SKIP_CONFLICT_DETECTION_FOR_CHILDREN) {
                         // Check for conflicts with already positioned individuals in this generation
                         // If conflict detected, shift the entire partnership (maintaining spacing)
-                        const existingPositions = Array.from(this.nodePositions.values())
-                            .filter(pos => pos.generation === gen);
+                        const existingPositions = Array.from(
+                            this.nodePositions.values(),
+                        ).filter(pos => pos.generation === gen);
 
-                    let needsShift = true;
-                    while (needsShift) {
-                        needsShift = false;
+                        let needsShift = true;
+                        while (needsShift) {
+                            needsShift = false;
 
-                        for (const existing of existingPositions) {
-                            // Skip self-checking for already positioned partners
-                            if ((positioned.has(p1.name) && existing.individual.name === p1.name) ||
-                                (positioned.has(p2.name) && existing.individual.name === p2.name)) {
-                                continue;
-                            }
-
-                            const distToP1 = Math.abs(existing.x - p1X);
-                            const distToP2 = Math.abs(existing.x - p2X);
-
-                            // Check conflicts
-                            const p1Conflict = distToP1 < minNodeSpacing;
-                            const p2Conflict = distToP2 < minNodeSpacing;
-
-                            if (p1Conflict || p2Conflict) {
-                                // Calculate shift amount needed
-                                let shiftAmount = 0;
-
-                                if (positioned.has(p1.name)) {
-                                    // p1 is fixed, shift p2 only
-                                    if (p2Conflict) {
-                                        let newP2X = existing.x + minNodeSpacing;
-                                        // Ensure we don't shift p2 onto p1
-                                        if (Math.abs(newP2X - p1X) < minNodeSpacing) {
-                                            // Try shifting in the other direction
-                                            newP2X = existing.x - minNodeSpacing;
-                                            // If that also conflicts with p1, shift further right
-                                            if (Math.abs(newP2X - p1X) < minNodeSpacing) {
-                                                newP2X = p1X + minNodeSpacing;
-                                            }
-                                        }
-                                        shiftAmount = newP2X - p2X;
-                                        p2X = newP2X;
-                                    }
-                                } else if (positioned.has(p2.name)) {
-                                    // p2 is fixed, shift p1 only
-                                    if (p1Conflict) {
-                                        // Try shifting right first (preferred to maintain ideal spacing from p2)
-                                        let newP1X = existing.x + minNodeSpacing;
-                                        // If that creates conflict with p2, shift further right past p2
-                                        if (Math.abs(newP1X - p2X) < minNodeSpacing) {
-                                            newP1X = Math.max(newP1X, p2X + minNodeSpacing);
-                                        }
-                                        shiftAmount = newP1X - p1X;
-                                        p1X = newP1X;
-                                    }
-                                } else {
-                                    // Neither fixed, shift entire partnership together
-                                    const minP1X = existing.x + minNodeSpacing;
-                                    const minP2X = existing.x + minNodeSpacing;
-                                    const targetP1X = Math.max(p1X, minP1X, minP2X - minNodeSpacing);
-                                    shiftAmount = targetP1X - p1X;
-                                    p1X += shiftAmount;
-                                    p2X += shiftAmount;
+                            for (const existing of existingPositions) {
+                                // Skip self-checking for already positioned partners
+                                if (
+                                    (positioned.has(p1.name) &&
+                                        existing.individual.name === p1.name) ||
+                                    (positioned.has(p2.name) &&
+                                        existing.individual.name === p2.name)
+                                ) {
+                                    continue;
                                 }
 
-                                needsShift = true;
-                                break;
+                                const distToP1 = Math.abs(existing.x - p1X);
+                                const distToP2 = Math.abs(existing.x - p2X);
+
+                                // Check conflicts
+                                const p1Conflict = distToP1 < minNodeSpacing;
+                                const p2Conflict = distToP2 < minNodeSpacing;
+
+                                if (p1Conflict || p2Conflict) {
+                                    // Calculate shift amount needed
+                                    let shiftAmount = 0;
+
+                                    if (positioned.has(p1.name)) {
+                                        // p1 is fixed, shift p2 only
+                                        if (p2Conflict) {
+                                            let newP2X =
+                                                existing.x + minNodeSpacing;
+                                            // Ensure we don't shift p2 onto p1
+                                            if (
+                                                Math.abs(newP2X - p1X) <
+                                                minNodeSpacing
+                                            ) {
+                                                // Try shifting in the other direction
+                                                newP2X =
+                                                    existing.x - minNodeSpacing;
+                                                // If that also conflicts with p1, shift further right
+                                                if (
+                                                    Math.abs(newP2X - p1X) <
+                                                    minNodeSpacing
+                                                ) {
+                                                    newP2X =
+                                                        p1X + minNodeSpacing;
+                                                }
+                                            }
+                                            shiftAmount = newP2X - p2X;
+                                            p2X = newP2X;
+                                        }
+                                    } else if (positioned.has(p2.name)) {
+                                        // p2 is fixed, shift p1 only
+                                        if (p1Conflict) {
+                                            // Try shifting right first (preferred to maintain ideal spacing from p2)
+                                            let newP1X =
+                                                existing.x + minNodeSpacing;
+                                            // If that creates conflict with p2, shift further right past p2
+                                            if (
+                                                Math.abs(newP1X - p2X) <
+                                                minNodeSpacing
+                                            ) {
+                                                newP1X = Math.max(
+                                                    newP1X,
+                                                    p2X + minNodeSpacing,
+                                                );
+                                            }
+                                            shiftAmount = newP1X - p1X;
+                                            p1X = newP1X;
+                                        }
+                                    } else {
+                                        // Neither fixed, shift entire partnership together
+                                        const minP1X =
+                                            existing.x + minNodeSpacing;
+                                        const minP2X =
+                                            existing.x + minNodeSpacing;
+                                        const targetP1X = Math.max(
+                                            p1X,
+                                            minP1X,
+                                            minP2X - minNodeSpacing,
+                                        );
+                                        shiftAmount = targetP1X - p1X;
+                                        p1X += shiftAmount;
+                                        p2X += shiftAmount;
+                                    }
+
+                                    needsShift = true;
+                                    break;
+                                }
                             }
                         }
-                    }
                     } // End of SKIP_CONFLICT_DETECTION_FOR_CHILDREN check
 
                     // Set positions (only if not already set)
                     if (!positioned.has(p1.name)) {
-                        this.nodePositions.set(p1.name, { individual: p1, x: p1X, y, generation: gen });
+                        this.nodePositions.set(p1.name, {
+                            individual: p1,
+                            x: p1X,
+                            y,
+                            generation: gen,
+                        });
                         positioned.add(p1.name);
                     }
                     if (!positioned.has(p2.name)) {
-                        this.nodePositions.set(p2.name, { individual: p2, x: p2X, y, generation: gen });
+                        this.nodePositions.set(p2.name, {
+                            individual: p2,
+                            x: p2X,
+                            y,
+                            generation: gen,
+                        });
                         positioned.add(p2.name);
                     }
 
-                    currentX = Math.max(currentX, Math.max(p1X, p2X) + minNodeSpacing);
+                    currentX = Math.max(
+                        currentX,
+                        Math.max(p1X, p2X) + minNodeSpacing,
+                    );
                 }
             }
 
@@ -578,7 +653,10 @@ export class PedigreeRenderer {
                 // Find children
                 const children: string[] = [];
                 for (const child of this.dataset) {
-                    if (child.mother === ind.name || child.father === ind.name) {
+                    if (
+                        child.mother === ind.name ||
+                        child.father === ind.name
+                    ) {
                         children.push(child.name);
                     }
                 }
@@ -587,29 +665,63 @@ export class PedigreeRenderer {
                     // Get child positions
                     const childPositions = children
                         .map(c => this.nodePositions.get(c))
-                        .filter((p): p is { individual: Individual; x: number; y: number; generation: number } => p !== undefined);
+                        .filter(
+                            (
+                                p,
+                            ): p is {
+                                individual: Individual;
+                                x: number;
+                                y: number;
+                                generation: number;
+                            } => p !== undefined,
+                        );
 
                     if (childPositions.length > 0) {
                         // Position centered above children
-                        const childMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
-                        this.nodePositions.set(ind.name, { individual: ind, x: childMidX, y, generation: gen });
+                        const childMidX =
+                            childPositions.reduce((sum, p) => sum + p.x, 0) /
+                            childPositions.length;
+                        this.nodePositions.set(ind.name, {
+                            individual: ind,
+                            x: childMidX,
+                            y,
+                            generation: gen,
+                        });
                         positioned.add(ind.name);
-                        currentX = Math.max(currentX, childMidX + minNodeSpacing);
+                        currentX = Math.max(
+                            currentX,
+                            childMidX + minNodeSpacing,
+                        );
                     }
                 }
             }
 
             // Phase 3: Position partnerships without children (left-to-right)
             for (const partnership of this.partnerships) {
-                const p1 = individuals.find(i => i.name === partnership.partner1);
-                const p2 = individuals.find(i => i.name === partnership.partner2);
+                const p1 = individuals.find(
+                    i => i.name === partnership.partner1,
+                );
+                const p2 = individuals.find(
+                    i => i.name === partnership.partner2,
+                );
 
                 if (!p1 || !p2) continue;
-                if (positioned.has(p1.name) || positioned.has(p2.name)) continue;
+                if (positioned.has(p1.name) || positioned.has(p2.name))
+                    continue;
 
-                this.nodePositions.set(p1.name, { individual: p1, x: currentX, y, generation: gen });
+                this.nodePositions.set(p1.name, {
+                    individual: p1,
+                    x: currentX,
+                    y,
+                    generation: gen,
+                });
                 currentX += minNodeSpacing;
-                this.nodePositions.set(p2.name, { individual: p2, x: currentX, y, generation: gen });
+                this.nodePositions.set(p2.name, {
+                    individual: p2,
+                    x: currentX,
+                    y,
+                    generation: gen,
+                });
                 currentX += minNodeSpacing;
                 positioned.add(p1.name);
                 positioned.add(p2.name);
@@ -620,7 +732,11 @@ export class PedigreeRenderer {
             for (const partnership of this.partnerships) {
                 const childrenInThisGen = partnership.children.filter(c => {
                     const child = this.individuals.get(c);
-                    return child && individuals.includes(child) && !positioned.has(c);
+                    return (
+                        child &&
+                        individuals.includes(child) &&
+                        !positioned.has(c)
+                    );
                 });
 
                 if (childrenInThisGen.length > 0) {
@@ -633,28 +749,42 @@ export class PedigreeRenderer {
                     if (p1Pos && p2Pos) {
                         // Both parents positioned - center children below parents
                         const parentMidX = (p1Pos.x + p2Pos.x) / 2;
-                        const groupWidth = (childrenInThisGen.length - 1) * minNodeSpacing;
+                        const groupWidth =
+                            (childrenInThisGen.length - 1) * minNodeSpacing;
                         groupStartX = parentMidX - groupWidth / 2;
-                        console.log(`Phase 4 centering: ${childrenInThisGen.join(',')} below ${partnership.partner1}/${partnership.partner2} (gen ${p1Pos.generation}/${p2Pos.generation}) at ${parentMidX}`);
+                        console.log(
+                            `Phase 4 centering: ${childrenInThisGen.join(',')} below ${partnership.partner1}/${partnership.partner2} (gen ${p1Pos.generation}/${p2Pos.generation}) at ${parentMidX}`,
+                        );
                     } else {
                         // Parents not positioned yet - use currentX
                         groupStartX = currentX;
-                        console.log(`Phase 4 NOT centering: ${childrenInThisGen.join(',')} - ${partnership.partner1} (${!!p1Pos}) / ${partnership.partner2} (${!!p2Pos})`);
+                        console.log(
+                            `Phase 4 NOT centering: ${childrenInThisGen.join(',')} - ${partnership.partner1} (${!!p1Pos}) / ${partnership.partner2} (${!!p2Pos})`,
+                        );
                     }
 
                     // Position children left-to-right
-                    const groupWidth = (childrenInThisGen.length - 1) * minNodeSpacing;
+                    const groupWidth =
+                        (childrenInThisGen.length - 1) * minNodeSpacing;
 
                     for (let i = 0; i < childrenInThisGen.length; i++) {
                         const childName = childrenInThisGen[i];
                         const child = this.individuals.get(childName)!;
                         const childX = groupStartX + i * minNodeSpacing;
-                        this.nodePositions.set(childName, { individual: child, x: childX, y, generation: gen });
+                        this.nodePositions.set(childName, {
+                            individual: child,
+                            x: childX,
+                            y,
+                            generation: gen,
+                        });
                         positioned.add(childName);
                     }
 
                     // Move currentX past this family group + extra spacing for next partnership
-                    currentX = Math.max(currentX, groupStartX + groupWidth + minNodeSpacing * 2);
+                    currentX = Math.max(
+                        currentX,
+                        groupStartX + groupWidth + minNodeSpacing * 2,
+                    );
                 }
             }
 
@@ -662,10 +792,17 @@ export class PedigreeRenderer {
             for (const ind of individuals) {
                 if (positioned.has(ind.name)) continue;
 
-                this.nodePositions.set(ind.name, { individual: ind, x: currentX, y, generation: gen });
+                this.nodePositions.set(ind.name, {
+                    individual: ind,
+                    x: currentX,
+                    y,
+                    generation: gen,
+                });
                 currentX += minNodeSpacing;
                 positioned.add(ind.name);
-                console.log(`Phase 5 positioned: ${ind.name} at ${currentX - minNodeSpacing}`);
+                console.log(
+                    `Phase 5 positioned: ${ind.name} at ${currentX - minNodeSpacing}`,
+                );
             }
 
             // Debug: Show what's positioned at end of this generation
@@ -673,7 +810,9 @@ export class PedigreeRenderer {
             const genPositioned = Array.from(this.nodePositions.values())
                 .filter(p => p.generation === gen)
                 .map(p => p.individual.name);
-            console.log(`Positioned in Gen ${gen}: ${genPositioned.join(', ')}`);
+            console.log(
+                `Positioned in Gen ${gen}: ${genPositioned.join(', ')}`,
+            );
         }
 
         // Backward pass: Center children below partnerships
@@ -704,13 +843,24 @@ export class PedigreeRenderer {
             // Get all positioned children
             const childPositions = partnership.children
                 .map(c => this.nodePositions.get(c))
-                .filter((p): p is { individual: Individual; x: number; y: number; generation: number } => p !== undefined);
+                .filter(
+                    (
+                        p,
+                    ): p is {
+                        individual: Individual;
+                        x: number;
+                        y: number;
+                        generation: number;
+                    } => p !== undefined,
+                );
 
             if (childPositions.length === 0) continue;
 
             // Calculate partnership midpoint and children midpoint
             const partnershipMidX = (p1Pos.x + p2Pos.x) / 2;
-            const childrenMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
+            const childrenMidX =
+                childPositions.reduce((sum, p) => sum + p.x, 0) /
+                childPositions.length;
 
             // Calculate shift needed to center children below partnership
             const shift = partnershipMidX - childrenMidX;
@@ -735,15 +885,17 @@ export class PedigreeRenderer {
      */
     private centerPartnershipsAboveChildren(minNodeSpacing: number): void {
         // Get all generations in reverse order
-        const allGenerations = Array.from(this.nodePositions.values())
-            .map(pos => pos.generation);
+        const allGenerations = Array.from(this.nodePositions.values()).map(
+            pos => pos.generation,
+        );
         const maxGen = Math.max(...allGenerations);
         const minGen = Math.min(...allGenerations);
 
         // Process generations from bottom to top (children first, then parents)
         for (let gen = maxGen; gen >= minGen; gen--) {
-            const genIndividuals = Array.from(this.nodePositions.values())
-                .filter(pos => pos.generation === gen);
+            const genIndividuals = Array.from(
+                this.nodePositions.values(),
+            ).filter(pos => pos.generation === gen);
 
             // Find all partnerships where both partners are in this generation
             for (const partnership of this.partnerships) {
@@ -751,18 +903,30 @@ export class PedigreeRenderer {
                 const p2Pos = this.nodePositions.get(partnership.partner2);
 
                 if (!p1Pos || !p2Pos) continue;
-                if (p1Pos.generation !== gen || p2Pos.generation !== gen) continue;
+                if (p1Pos.generation !== gen || p2Pos.generation !== gen)
+                    continue;
                 if (partnership.children.length === 0) continue;
 
                 // Get child positions
                 const childPositions = partnership.children
                     .map(c => this.nodePositions.get(c))
-                    .filter((p): p is { individual: Individual; x: number; y: number; generation: number } => p !== undefined);
+                    .filter(
+                        (
+                            p,
+                        ): p is {
+                            individual: Individual;
+                            x: number;
+                            y: number;
+                            generation: number;
+                        } => p !== undefined,
+                    );
 
                 if (childPositions.length === 0) continue;
 
                 // Calculate ideal midpoint above children
-                const childMidX = childPositions.reduce((sum, p) => sum + p.x, 0) / childPositions.length;
+                const childMidX =
+                    childPositions.reduce((sum, p) => sum + p.x, 0) /
+                    childPositions.length;
                 const currentMidX = (p1Pos.x + p2Pos.x) / 2;
 
                 // If already centered (within tolerance), skip
@@ -777,8 +941,10 @@ export class PedigreeRenderer {
                 let hasCollision = false;
                 for (const otherPos of genIndividuals) {
                     // Skip self
-                    if (otherPos.individual.name === p1Pos.individual.name ||
-                        otherPos.individual.name === p2Pos.individual.name) {
+                    if (
+                        otherPos.individual.name === p1Pos.individual.name ||
+                        otherPos.individual.name === p2Pos.individual.name
+                    ) {
                         continue;
                     }
 
@@ -786,7 +952,10 @@ export class PedigreeRenderer {
                     const distToP1 = Math.abs(otherPos.x - newP1X);
                     const distToP2 = Math.abs(otherPos.x - newP2X);
 
-                    if (distToP1 < minNodeSpacing || distToP2 < minNodeSpacing) {
+                    if (
+                        distToP1 < minNodeSpacing ||
+                        distToP2 < minNodeSpacing
+                    ) {
                         hasCollision = true;
                         break;
                     }
@@ -816,14 +985,13 @@ export class PedigreeRenderer {
                 if (pos1.x === pos2.x && pos1.y === pos2.y) {
                     throw new Error(
                         `Position overlap detected: "${pos1.individual.name}" and "${pos2.individual.name}" ` +
-                        `are both positioned at (${pos1.x}, ${pos1.y}). ` +
-                        `This indicates a bug in the positioning algorithm.`
+                            `are both positioned at (${pos1.x}, ${pos1.y}). ` +
+                            `This indicates a bug in the positioning algorithm.`,
                     );
                 }
             }
         }
     }
-
 
     /**
      * Center the entire diagram horizontally on the canvas
@@ -1251,14 +1419,30 @@ export class PedigreeRenderer {
                 ind1.relationship_type === 'consensual' ||
                 ind2.relationship_type === 'consensual';
 
-            drawPartnershipLine(svg, p1.x, p1.y, p2.x, p2.y, consanguineous, isUnmarried);
+            drawPartnershipLine(
+                svg,
+                p1.x,
+                p1.y,
+                p2.x,
+                p2.y,
+                consanguineous,
+                isUnmarried,
+            );
 
             // Bennett standard: consanguinity degree label (e.g., "1st cousins")
             // Note: This requires a 'consanguinity_degree' property on one of the individuals
-            const consanguinityDegree = (ind1 as any).consanguinity_degree || (ind2 as any).consanguinity_degree;
+            const consanguinityDegree =
+                (ind1 as any).consanguinity_degree ||
+                (ind2 as any).consanguinity_degree;
             if (consanguineous && consanguinityDegree) {
                 const midX = (p1.x + p2.x) / 2;
-                drawConsanguinityDegreeLabel(svg, midX, p1.y, consanguinityDegree, fontFamily);
+                drawConsanguinityDegreeLabel(
+                    svg,
+                    midX,
+                    p1.y,
+                    consanguinityDegree,
+                    fontFamily,
+                );
             }
 
             // Divorced indicator (Bennett: double hash marks on partnership line)
@@ -1268,7 +1452,10 @@ export class PedigreeRenderer {
             }
 
             // Bennett standard: no children by choice indicator (line through offspring connection)
-            if (partnership.children.length === 0 && (ind1.no_children_by_choice || ind2.no_children_by_choice)) {
+            if (
+                partnership.children.length === 0 &&
+                (ind1.no_children_by_choice || ind2.no_children_by_choice)
+            ) {
                 const midX = (p1.x + p2.x) / 2;
                 const offspringY = p1.y + symbolSize * 1.5; // Position below partnership line
                 drawNoChildrenByChoiceIndicator(svg, midX, offspringY);
@@ -1353,13 +1540,24 @@ export class PedigreeRenderer {
 
                             // Draw diagonal lines for each pair of DZ twins
                             // Bennett standard: diagonal lines from sibship line to each twin
-                            for (let i = 0; i < allDzTwinPositions.length; i++) {
-                                for (let j = i + 1; j < allDzTwinPositions.length; j++) {
+                            for (
+                                let i = 0;
+                                i < allDzTwinPositions.length;
+                                i++
+                            ) {
+                                for (
+                                    let j = i + 1;
+                                    j < allDzTwinPositions.length;
+                                    j++
+                                ) {
                                     const twin1 = allDzTwinPositions[i];
                                     const twin2 = allDzTwinPositions[j];
 
                                     // Connection point between sibship line and twins
-                                    const connectionY = sibshipY + (twin1.y - symbolSize / 2 - sibshipY) / 3;
+                                    const connectionY =
+                                        sibshipY +
+                                        (twin1.y - symbolSize / 2 - sibshipY) /
+                                            3;
 
                                     drawDzTwinLines(
                                         svg,
@@ -1431,7 +1629,13 @@ export class PedigreeRenderer {
                     );
                 } else {
                     // Parent offset from child - use 3-line pattern
-                    drawLine(svg, parentPos.x, parentPos.y, parentPos.x, sibshipY);
+                    drawLine(
+                        svg,
+                        parentPos.x,
+                        parentPos.y,
+                        parentPos.x,
+                        sibshipY,
+                    );
                     drawLine(svg, parentPos.x, sibshipY, childPos.x, sibshipY);
                     drawLine(
                         svg,
@@ -1486,7 +1690,13 @@ export class PedigreeRenderer {
             if (ind.terminated) {
                 // Bennett standard: triangle size varies by gestational age
                 // Ectopic pregnancies shown with forward slash through triangle
-                drawTerminationSymbol(g as any, symbolSize, nodeBackground, ind.terminated_age, ind.ectopic);
+                drawTerminationSymbol(
+                    g as any,
+                    symbolSize,
+                    nodeBackground,
+                    ind.terminated_age,
+                    ind.ectopic,
+                );
             } else if (ind.sex === 'M') {
                 drawMaleSymbol(
                     g as any,
@@ -1532,7 +1742,12 @@ export class PedigreeRenderer {
             }
             // Bennett standard: birth order notation (Roman numerals)
             if (ind.birth_order) {
-                drawBirthOrderLabel(g as any, ind.birth_order, symbolSize, fontFamily);
+                drawBirthOrderLabel(
+                    g as any,
+                    ind.birth_order,
+                    symbolSize,
+                    fontFamily,
+                );
             }
             // Bennett standard: carrier status (dot in center)
             if (ind.carrier) {
@@ -1540,7 +1755,12 @@ export class PedigreeRenderer {
             }
             // Bennett standard: gene copy number notation
             if (ind.gene_copy_number) {
-                drawGeneCopyNumberLabel(g as any, ind.gene_copy_number, symbolSize, fontFamily);
+                drawGeneCopyNumberLabel(
+                    g as any,
+                    ind.gene_copy_number,
+                    symbolSize,
+                    fontFamily,
+                );
             }
             // Bennett standard: obligate carrier (outlined dot)
             if (ind.obligate_carrier) {
@@ -1552,20 +1772,44 @@ export class PedigreeRenderer {
             }
             // Bennett standard: pregnancy outcome label (SAB, TOP, SB)
             // Note: Ectopic is shown via slash through triangle symbol, not text label
-            if (ind.pregnancy_outcome && ind.pregnancy_outcome !== 'unknown' && ind.pregnancy_outcome !== 'ectopic') {
-                drawPregnancyOutcomeLabel(g as any, ind.pregnancy_outcome, symbolSize, fontFamily);
+            if (
+                ind.pregnancy_outcome &&
+                ind.pregnancy_outcome !== 'unknown' &&
+                ind.pregnancy_outcome !== 'ectopic'
+            ) {
+                drawPregnancyOutcomeLabel(
+                    g as any,
+                    ind.pregnancy_outcome,
+                    symbolSize,
+                    fontFamily,
+                );
             }
             // Bennett standard: ART (Assisted Reproductive Technology) indicator
             if (ind.art_type) {
-                drawARTIndicator(g as any, ind.art_type, symbolSize, fontFamily);
+                drawARTIndicator(
+                    g as any,
+                    ind.art_type,
+                    symbolSize,
+                    fontFamily,
+                );
             }
             // Bennett 2022: Gender identity marker (when different from sex assigned at birth)
             if (ind.gender && ind.gender !== ind.sex) {
-                drawGenderIdentityMarker(g as any, ind.gender, symbolSize, fontFamily);
+                drawGenderIdentityMarker(
+                    g as any,
+                    ind.gender,
+                    symbolSize,
+                    fontFamily,
+                );
             }
             // Bennett standard: Ashkenazi ancestry indicator (A marker)
             if (ind.ashkenazi === 1) {
-                drawAshkenaziIndicator(g as any, symbolSize, fontFamily, fontSize);
+                drawAshkenaziIndicator(
+                    g as any,
+                    symbolSize,
+                    fontFamily,
+                    fontSize,
+                );
             }
             // Bennett standard: genetic anticipation (asterisk marker)
             if (ind.anticipation) {
@@ -1578,7 +1822,12 @@ export class PedigreeRenderer {
             }
             // Bennett standard: pregnancy duration (weeks label)
             if (ind.pregnant && ind.terminated_age) {
-                drawPregnancyDurationLabel(g as any, ind.terminated_age, symbolSize, fontFamily);
+                drawPregnancyDurationLabel(
+                    g as any,
+                    ind.terminated_age,
+                    symbolSize,
+                    fontFamily,
+                );
             }
 
             // Labels
@@ -1672,12 +1921,25 @@ export class PedigreeRenderer {
         // Draw generation number for each unique generation
         for (const [generation, y] of generationYPositions.entries()) {
             // Only draw if the generation number is explicitly set on at least one individual
-            const hasExplicitGenNumber = Array.from(this.nodePositions.values()).some(
-                pos => pos.generation === generation && pos.individual.generation !== undefined,
+            const hasExplicitGenNumber = Array.from(
+                this.nodePositions.values(),
+            ).some(
+                pos =>
+                    pos.generation === generation &&
+                    pos.individual.generation !== undefined,
             );
 
-            if (hasExplicitGenNumber || this.options.labels?.includes('generation')) {
-                drawGenerationNumber(svg as any, generation + 1, y, minX, fontFamily); // +1 because generations are 0-indexed
+            if (
+                hasExplicitGenNumber ||
+                this.options.labels?.includes('generation')
+            ) {
+                drawGenerationNumber(
+                    svg as any,
+                    generation + 1,
+                    y,
+                    minX,
+                    fontFamily,
+                ); // +1 because generations are 0-indexed
             }
         }
     }

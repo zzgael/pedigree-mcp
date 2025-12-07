@@ -14,9 +14,28 @@ describe('Pedigree Edge Cases', () => {
             const dataset: Individual[] = [
                 { name: 'dad', sex: 'M', top_level: true },
                 { name: 'mom', sex: 'F', top_level: true },
-                { name: 't1', sex: 'M', mother: 'mom', father: 'dad', mztwin: 'triplets' },
-                { name: 't2', sex: 'F', mother: 'mom', father: 'dad', mztwin: 'triplets' },
-                { name: 't3', sex: 'M', mother: 'mom', father: 'dad', mztwin: 'triplets', proband: true },
+                {
+                    name: 't1',
+                    sex: 'M',
+                    mother: 'mom',
+                    father: 'dad',
+                    mztwin: 'triplets',
+                },
+                {
+                    name: 't2',
+                    sex: 'F',
+                    mother: 'mom',
+                    father: 'dad',
+                    mztwin: 'triplets',
+                },
+                {
+                    name: 't3',
+                    sex: 'M',
+                    mother: 'mom',
+                    father: 'dad',
+                    mztwin: 'triplets',
+                    proband: true,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -40,8 +59,14 @@ describe('Pedigree Edge Cases', () => {
             const svg = renderer.renderSvg();
 
             // Extract lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -53,11 +78,14 @@ describe('Pedigree Edge Cases', () => {
             }
 
             // Find twin bar (should span all three triplets)
-            const horizontalLines = lines.filter(line => Math.abs(line.y1 - line.y2) < 1);
-            const twinBar = horizontalLines.find(line =>
-                line.y1 < t1Pos.y && // Above the triplets
-                Math.abs(line.x1 - t1Pos.x) < 5 &&
-                Math.abs(line.x2 - t3Pos.x) < 5
+            const horizontalLines = lines.filter(
+                line => Math.abs(line.y1 - line.y2) < 1,
+            );
+            const twinBar = horizontalLines.find(
+                line =>
+                    line.y1 < t1Pos.y && // Above the triplets
+                    Math.abs(line.x1 - t1Pos.x) < 5 &&
+                    Math.abs(line.x2 - t3Pos.x) < 5,
             );
 
             expect(twinBar).toBeDefined();
@@ -67,10 +95,34 @@ describe('Pedigree Edge Cases', () => {
             const dataset: Individual[] = [
                 { name: 'dad', sex: 'M', top_level: true },
                 { name: 'mom', sex: 'F', top_level: true },
-                { name: 'mz1', sex: 'F', mother: 'mom', father: 'dad', mztwin: 'mz' },
-                { name: 'mz2', sex: 'F', mother: 'mom', father: 'dad', mztwin: 'mz' },
-                { name: 'dz1', sex: 'M', mother: 'mom', father: 'dad', dztwin: 'dz' },
-                { name: 'dz2', sex: 'M', mother: 'mom', father: 'dad', dztwin: 'dz' },
+                {
+                    name: 'mz1',
+                    sex: 'F',
+                    mother: 'mom',
+                    father: 'dad',
+                    mztwin: 'mz',
+                },
+                {
+                    name: 'mz2',
+                    sex: 'F',
+                    mother: 'mom',
+                    father: 'dad',
+                    mztwin: 'mz',
+                },
+                {
+                    name: 'dz1',
+                    sex: 'M',
+                    mother: 'mom',
+                    father: 'dad',
+                    dztwin: 'dz',
+                },
+                {
+                    name: 'dz2',
+                    sex: 'M',
+                    mother: 'mom',
+                    father: 'dad',
+                    dztwin: 'dz',
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -89,8 +141,14 @@ describe('Pedigree Edge Cases', () => {
             const svg = renderer.renderSvg();
 
             // Extract horizontal lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -101,21 +159,29 @@ describe('Pedigree Edge Cases', () => {
                 });
             }
 
-            const horizontalLines = lines.filter(line => Math.abs(line.y1 - line.y2) < 1);
+            const horizontalLines = lines.filter(
+                line => Math.abs(line.y1 - line.y2) < 1,
+            );
 
             // Should have MZ twin bar
-            const mzBar = horizontalLines.find(line =>
-                line.y1 < mz1Pos.y &&
-                ((Math.abs(line.x1 - mz1Pos.x) < 5 && Math.abs(line.x2 - mz2Pos.x) < 5) ||
-                 (Math.abs(line.x1 - mz2Pos.x) < 5 && Math.abs(line.x2 - mz1Pos.x) < 5))
+            const mzBar = horizontalLines.find(
+                line =>
+                    line.y1 < mz1Pos.y &&
+                    ((Math.abs(line.x1 - mz1Pos.x) < 5 &&
+                        Math.abs(line.x2 - mz2Pos.x) < 5) ||
+                        (Math.abs(line.x1 - mz2Pos.x) < 5 &&
+                            Math.abs(line.x2 - mz1Pos.x) < 5)),
             );
             expect(mzBar).toBeDefined();
 
             // Should NOT have DZ twin bar
-            const dzBar = horizontalLines.find(line =>
-                line.y1 < dz1Pos.y &&
-                ((Math.abs(line.x1 - dz1Pos.x) < 5 && Math.abs(line.x2 - dz2Pos.x) < 5) ||
-                 (Math.abs(line.x1 - dz2Pos.x) < 5 && Math.abs(line.x2 - dz1Pos.x) < 5))
+            const dzBar = horizontalLines.find(
+                line =>
+                    line.y1 < dz1Pos.y &&
+                    ((Math.abs(line.x1 - dz1Pos.x) < 5 &&
+                        Math.abs(line.x2 - dz2Pos.x) < 5) ||
+                        (Math.abs(line.x1 - dz2Pos.x) < 5 &&
+                            Math.abs(line.x2 - dz1Pos.x) < 5)),
             );
             expect(dzBar).toBeUndefined();
         });
@@ -124,8 +190,20 @@ describe('Pedigree Edge Cases', () => {
             const dataset: Individual[] = [
                 { name: 'gf', sex: 'M', top_level: true },
                 { name: 'gm', sex: 'F', top_level: true },
-                { name: 't1', sex: 'M', mother: 'gm', father: 'gf', mztwin: 'twins' },
-                { name: 't2', sex: 'F', mother: 'gm', father: 'gf', mztwin: 'twins' },
+                {
+                    name: 't1',
+                    sex: 'M',
+                    mother: 'gm',
+                    father: 'gf',
+                    mztwin: 'twins',
+                },
+                {
+                    name: 't2',
+                    sex: 'F',
+                    mother: 'gm',
+                    father: 'gf',
+                    mztwin: 'twins',
+                },
                 { name: 't1spouse', sex: 'F', top_level: true },
                 { name: 't2spouse', sex: 'M', top_level: true },
                 { name: 'child1', sex: 'F', mother: 't1spouse', father: 't1' },
@@ -150,8 +228,14 @@ describe('Pedigree Edge Cases', () => {
             const svg = renderer.renderSvg();
 
             // Twin bar should exist even with partners
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -162,11 +246,16 @@ describe('Pedigree Edge Cases', () => {
                 });
             }
 
-            const horizontalLines = lines.filter(line => Math.abs(line.y1 - line.y2) < 1);
-            const twinBar = horizontalLines.find(line =>
-                line.y1 < t1Pos.y &&
-                ((Math.abs(line.x1 - t1Pos.x) < 5 && Math.abs(line.x2 - t2Pos.x) < 5) ||
-                 (Math.abs(line.x1 - t2Pos.x) < 5 && Math.abs(line.x2 - t1Pos.x) < 5))
+            const horizontalLines = lines.filter(
+                line => Math.abs(line.y1 - line.y2) < 1,
+            );
+            const twinBar = horizontalLines.find(
+                line =>
+                    line.y1 < t1Pos.y &&
+                    ((Math.abs(line.x1 - t1Pos.x) < 5 &&
+                        Math.abs(line.x2 - t2Pos.x) < 5) ||
+                        (Math.abs(line.x1 - t2Pos.x) < 5 &&
+                            Math.abs(line.x2 - t1Pos.x) < 5)),
             );
 
             expect(twinBar).toBeDefined();
@@ -187,9 +276,19 @@ describe('Pedigree Edge Cases', () => {
                 // Gen 2: Cousins
                 { name: 'cousin1', sex: 'M', mother: 'aunt', father: 'uncle' },
                 { name: 'cousin1spouse', sex: 'F', top_level: true },
-                { name: 'person', sex: 'F', mother: 'parent', father: 'parentSpouse' },
+                {
+                    name: 'person',
+                    sex: 'F',
+                    mother: 'parent',
+                    father: 'parentSpouse',
+                },
                 // Gen 3: First cousin once removed marriage
-                { name: 'cousinChild', sex: 'M', mother: 'cousin1spouse', father: 'cousin1' },
+                {
+                    name: 'cousinChild',
+                    sex: 'M',
+                    mother: 'cousin1spouse',
+                    father: 'cousin1',
+                },
                 {
                     name: 'inbred',
                     sex: 'F',
@@ -219,8 +318,14 @@ describe('Pedigree Edge Cases', () => {
             const svg = renderer.renderSvg();
 
             // Should render consanguineous partnership (double line)
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -232,9 +337,10 @@ describe('Pedigree Edge Cases', () => {
             }
 
             // Find consanguineous partnership lines
-            const partnershipLines = lines.filter(line =>
-                Math.abs(line.y1 - line.y2) < 1 && // Horizontal
-                Math.abs(line.y1 - cousinChildPos.y) < 10
+            const partnershipLines = lines.filter(
+                line =>
+                    Math.abs(line.y1 - line.y2) < 1 && // Horizontal
+                    Math.abs(line.y1 - cousinChildPos.y) < 10,
             );
 
             // Should have double line (2 parallel lines)
@@ -255,8 +361,18 @@ describe('Pedigree Edge Cases', () => {
                 { name: 'brother2', sex: 'M', mother: 'gmA', father: 'gfA' },
                 { name: 'sister2', sex: 'F', mother: 'gmB', father: 'gfB' },
                 // Double first cousins
-                { name: 'child1', sex: 'F', mother: 'sister1', father: 'brother1' },
-                { name: 'child2', sex: 'M', mother: 'sister2', father: 'brother2' },
+                {
+                    name: 'child1',
+                    sex: 'F',
+                    mother: 'sister1',
+                    father: 'brother1',
+                },
+                {
+                    name: 'child2',
+                    sex: 'M',
+                    mother: 'sister2',
+                    father: 'brother2',
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -270,7 +386,9 @@ describe('Pedigree Edge Cases', () => {
 
             // Children should have proper spacing
             const minNodeSpacing = 140;
-            expect(Math.abs(child2Pos.x - child1Pos.x)).toBeGreaterThanOrEqual(minNodeSpacing);
+            expect(Math.abs(child2Pos.x - child1Pos.x)).toBeGreaterThanOrEqual(
+                minNodeSpacing,
+            );
 
             const svg = renderer.renderSvg();
             expect(svg).toContain('<svg');
@@ -389,7 +507,9 @@ describe('Pedigree Edge Cases', () => {
             // Left children should be ordered and spaced
             const minNodeSpacing = 140;
             for (let i = 1; i < leftChildren.length; i++) {
-                expect(leftChildren[i].x).toBeGreaterThan(leftChildren[i - 1].x);
+                expect(leftChildren[i].x).toBeGreaterThan(
+                    leftChildren[i - 1].x,
+                );
                 const spacing = leftChildren[i].x - leftChildren[i - 1].x;
                 expect(spacing).toBeGreaterThanOrEqual(minNodeSpacing);
             }
@@ -424,7 +544,13 @@ describe('Pedigree Edge Cases', () => {
                 { name: 'g6', sex: 'F', mother: 'g5s', father: 'g5' },
                 { name: 'g6s', sex: 'M', top_level: true },
                 // Gen 7
-                { name: 'g7', sex: 'M', mother: 'g6', father: 'g6s', proband: true },
+                {
+                    name: 'g7',
+                    sex: 'M',
+                    mother: 'g6',
+                    father: 'g6s',
+                    proband: true,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -465,9 +591,25 @@ describe('Pedigree Edge Cases', () => {
                 { name: 'spouse1', sex: 'F', top_level: true },
                 { name: 'spouse2', sex: 'F', top_level: true },
                 { name: 'spouse3', sex: 'F', top_level: true },
-                { name: 'child1', sex: 'M', mother: 'spouse1', father: 'person' },
-                { name: 'child2', sex: 'F', mother: 'spouse2', father: 'person' },
-                { name: 'child3', sex: 'M', mother: 'spouse3', father: 'person', proband: true },
+                {
+                    name: 'child1',
+                    sex: 'M',
+                    mother: 'spouse1',
+                    father: 'person',
+                },
+                {
+                    name: 'child2',
+                    sex: 'F',
+                    mother: 'spouse2',
+                    father: 'person',
+                },
+                {
+                    name: 'child3',
+                    sex: 'M',
+                    mother: 'spouse3',
+                    father: 'person',
+                    proband: true,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -507,7 +649,13 @@ describe('Pedigree Edge Cases', () => {
                 // Dad remarries
                 { name: 'mom2', sex: 'F', top_level: true },
                 { name: 'child2', sex: 'M', mother: 'mom2', father: 'dad' },
-                { name: 'child3', sex: 'F', mother: 'mom2', father: 'dad', proband: true },
+                {
+                    name: 'child3',
+                    sex: 'F',
+                    mother: 'mom2',
+                    father: 'dad',
+                    proband: true,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -531,8 +679,12 @@ describe('Pedigree Edge Cases', () => {
 
             // Children should have proper spacing
             const minNodeSpacing = 140;
-            expect(Math.abs(child2Pos.x - child1Pos.x)).toBeGreaterThanOrEqual(minNodeSpacing);
-            expect(Math.abs(child3Pos.x - child2Pos.x)).toBeGreaterThanOrEqual(minNodeSpacing);
+            expect(Math.abs(child2Pos.x - child1Pos.x)).toBeGreaterThanOrEqual(
+                minNodeSpacing,
+            );
+            expect(Math.abs(child3Pos.x - child2Pos.x)).toBeGreaterThanOrEqual(
+                minNodeSpacing,
+            );
 
             const svg = renderer.renderSvg();
             expect(svg).toContain('<svg');
@@ -578,8 +730,14 @@ describe('Pedigree Edge Cases', () => {
             expect(carrierDot).toBeDefined();
 
             // Extract lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let lineMatch;
             while ((lineMatch = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -629,13 +787,17 @@ describe('Pedigree Edge Cases', () => {
             expect(svg).toContain('#F68F35'); // First color from palette
 
             // Verify group transform matches position
-            const groupRegex = /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
+            const groupRegex =
+                /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
             let foundGroup = false;
             let match;
             while ((match = groupRegex.exec(svg)) !== null) {
                 const groupX = parseFloat(match[1]);
                 const groupY = parseFloat(match[2]);
-                if (Math.abs(groupX - personPos.x) < 1 && Math.abs(groupY - personPos.y) < 1) {
+                if (
+                    Math.abs(groupX - personPos.x) < 1 &&
+                    Math.abs(groupY - personPos.y) < 1
+                ) {
                     foundGroup = true;
                     break;
                 }
@@ -680,7 +842,9 @@ describe('Pedigree Edge Cases', () => {
 
             // Check for left and right brackets
             const leftBrackets = paths.filter(p => p.match(/^M-\d+/));
-            const rightBrackets = paths.filter(p => p.match(/^M\d+/) || p.match(/^M\s+\d+/));
+            const rightBrackets = paths.filter(
+                p => p.match(/^M\d+/) || p.match(/^M\s+\d+/),
+            );
             expect(leftBrackets.length).toBeGreaterThanOrEqual(1);
             expect(rightBrackets.length).toBeGreaterThanOrEqual(1);
 

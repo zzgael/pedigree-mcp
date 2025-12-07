@@ -210,7 +210,10 @@ export function drawAdoptionBrackets(
  * Bennett standard: child placed for adoption (vs adopted IN with brackets)
  * Positioned in upper-right to avoid label collision
  */
-export function drawAdoptedOutIndicator(g: GroupSelection, symbolSize: number): void {
+export function drawAdoptedOutIndicator(
+    g: GroupSelection,
+    symbolSize: number,
+): void {
     const xOffset = symbolSize * 0.6;
     const yOffset = -symbolSize * 0.5; // Move to upper area
     const arrowSize = symbolSize / 4;
@@ -237,7 +240,10 @@ export function drawAdoptedOutIndicator(g: GroupSelection, symbolSize: number): 
  * Draw foster placement indicator (dashed brackets)
  * Bennett standard: temporary foster placement (vs permanent adoption)
  */
-export function drawFosterIndicator(g: GroupSelection, symbolSize: number): void {
+export function drawFosterIndicator(
+    g: GroupSelection,
+    symbolSize: number,
+): void {
     const dx = symbolSize * 0.66;
     const dy = symbolSize * 0.64;
     const indent = symbolSize / 4;
@@ -275,8 +281,21 @@ export function drawBirthOrderLabel(
     symbolSize: number,
     fontFamily: string,
 ): void {
-    const romanNumerals = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-    const label = birthOrder <= 10 ? romanNumerals[birthOrder] : String(birthOrder);
+    const romanNumerals = [
+        '0',
+        'I',
+        'II',
+        'III',
+        'IV',
+        'V',
+        'VI',
+        'VII',
+        'VIII',
+        'IX',
+        'X',
+    ];
+    const label =
+        birthOrder <= 10 ? romanNumerals[birthOrder] : String(birthOrder);
 
     g.append('text')
         .attr('x', -symbolSize * 0.5 - 5)
@@ -340,7 +359,8 @@ export function drawPregnancyOutcomeLabel(
 
     // Position ABOVE the triangle symbol to avoid name and dynamic legend collision below
     // White stroke for better visibility on any background
-    const text = g.append('text')
+    const text = g
+        .append('text')
         .attr('x', 0)
         .attr('y', -symbolSize * 0.8) // Above symbol to avoid legend collision
         .attr('text-anchor', 'middle')
@@ -427,8 +447,21 @@ export function drawGenerationNumber(
     minX: number,
     fontFamily: string,
 ): void {
-    const romanNumerals = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-    const label = generation <= 10 ? romanNumerals[generation] : String(generation);
+    const romanNumerals = [
+        '0',
+        'I',
+        'II',
+        'III',
+        'IV',
+        'V',
+        'VI',
+        'VII',
+        'VIII',
+        'IX',
+        'X',
+    ];
+    const label =
+        generation <= 10 ? romanNumerals[generation] : String(generation);
 
     svg.append('text')
         .attr('x', minX - 40) // Position to left of pedigree
@@ -667,7 +700,8 @@ export function drawTerminationSymbol(
     // Size varies based on gestational age
     // Early loss (<20 weeks): small triangle
     // Stillbirth (>=20 weeks): larger triangle
-    const isStillbirth = gestationalWeeks !== undefined && gestationalWeeks >= 20;
+    const isStillbirth =
+        gestationalWeeks !== undefined && gestationalWeeks >= 20;
     const half = isStillbirth ? symbolSize / 2.5 : symbolSize / 3;
 
     g.append('polygon')
@@ -726,7 +760,11 @@ export function drawDivorcedIndicator(
  * Bennett standard: consultand is the person seeking genetic counseling (different from proband)
  * @param probandPresent - If true, offset to bottom-right to avoid overlap with proband arrow
  */
-export function drawConsultandIndicator(g: GroupSelection, symbolSize: number, probandPresent = false): void {
+export function drawConsultandIndicator(
+    g: GroupSelection,
+    symbolSize: number,
+    probandPresent = false,
+): void {
     const arrowSize = symbolSize / 3;
     const offset = symbolSize * 0.7;
 
@@ -788,7 +826,10 @@ export function drawObligateCarrierIndicator(g: GroupSelection): void {
  * Draw infertility indicator (crossed lines through symbol)
  * Bennett standard: X through symbol indicates infertility
  */
-export function drawInfertilityIndicator(g: GroupSelection, symbolSize: number): void {
+export function drawInfertilityIndicator(
+    g: GroupSelection,
+    symbolSize: number,
+): void {
     const size = symbolSize * 0.6;
 
     // Diagonal line from top-left to bottom-right

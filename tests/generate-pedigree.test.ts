@@ -239,7 +239,10 @@ describe('generatePedigree tool', () => {
             const dataset: Individual[] = [
                 { name: 'p', sex: 'M', top_level: true },
             ];
-            const result = await generatePedigree({ dataset, background: '#f0f0f0' });
+            const result = await generatePedigree({
+                dataset,
+                background: '#f0f0f0',
+            });
             expect(result.image_base64).toBeDefined();
             const buffer = Buffer.from(result.image_base64, 'base64');
             expect(buffer[0]).toBe(0x89);
@@ -249,7 +252,10 @@ describe('generatePedigree tool', () => {
             const dataset: Individual[] = [
                 { name: 'p', sex: 'M', top_level: true, age: 45 },
             ];
-            const result = await generatePedigree({ dataset, labels: ['age', 'name'] });
+            const result = await generatePedigree({
+                dataset,
+                labels: ['age', 'name'],
+            });
             expect(result.image_base64).toBeDefined();
             const buffer = Buffer.from(result.image_base64, 'base64');
             expect(buffer[0]).toBe(0x89);

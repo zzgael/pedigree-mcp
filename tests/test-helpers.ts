@@ -39,7 +39,8 @@ export interface Group {
  * Extract all line elements from SVG string
  */
 export function extractLines(svg: string): Line[] {
-    const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+    const lineRegex =
+        /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
     const lines: Line[] = [];
     let match;
     while ((match = lineRegex.exec(svg)) !== null) {
@@ -60,7 +61,8 @@ export function extractSymbols(svg: string): Symbol[] {
     const symbols: Symbol[] = [];
 
     // Extract rectangles
-    const rectRegex = /<rect[^>]*x="([^"]*)"[^>]*y="([^"]*)"[^>]*width="([^"]*)"[^>]*height="([^"]*)"[^>]*>/g;
+    const rectRegex =
+        /<rect[^>]*x="([^"]*)"[^>]*y="([^"]*)"[^>]*width="([^"]*)"[^>]*height="([^"]*)"[^>]*>/g;
     let match;
     while ((match = rectRegex.exec(svg)) !== null) {
         symbols.push({
@@ -73,7 +75,8 @@ export function extractSymbols(svg: string): Symbol[] {
     }
 
     // Extract circles
-    const circleRegex = /<circle[^>]*cx="([^"]*)"[^>]*cy="([^"]*)"[^>]*r="([^"]*)"[^>]*>/g;
+    const circleRegex =
+        /<circle[^>]*cx="([^"]*)"[^>]*cy="([^"]*)"[^>]*r="([^"]*)"[^>]*>/g;
     while ((match = circleRegex.exec(svg)) !== null) {
         symbols.push({
             type: 'circle',
@@ -108,7 +111,8 @@ export function extractSymbols(svg: string): Symbol[] {
  * Extract all text elements from SVG string
  */
 export function extractText(svg: string): TextElement[] {
-    const textRegex = /<text[^>]*x="([^"]*)"[^>]*y="([^"]*)"[^>]*>(.*?)<\/text>/g;
+    const textRegex =
+        /<text[^>]*x="([^"]*)"[^>]*y="([^"]*)"[^>]*>(.*?)<\/text>/g;
     const texts: TextElement[] = [];
     let match;
     while ((match = textRegex.exec(svg)) !== null) {
@@ -174,7 +178,7 @@ export function assertVerticalLine(line: Line, tolerance = 1) {
     if (deltaX >= tolerance) {
         throw new Error(
             `Expected vertical line but found diagonal: (${line.x1}, ${line.y1}) -> (${line.x2}, ${line.y2}). ` +
-            `ΔX = ${deltaX}, tolerance = ${tolerance}`
+                `ΔX = ${deltaX}, tolerance = ${tolerance}`,
         );
     }
 }
@@ -187,7 +191,7 @@ export function assertHorizontalLine(line: Line, tolerance = 1) {
     if (deltaY >= tolerance) {
         throw new Error(
             `Expected horizontal line but found diagonal: (${line.x1}, ${line.y1}) -> (${line.x2}, ${line.y2}). ` +
-            `ΔY = ${deltaY}, tolerance = ${tolerance}`
+                `ΔY = ${deltaY}, tolerance = ${tolerance}`,
         );
     }
 }
@@ -216,7 +220,7 @@ export function assertDoubleLine(lines: Line[], spacing = 3, tolerance = 1) {
         const offset = Math.abs(line1.y1 - line2.y1);
         if (Math.abs(offset - spacing) > tolerance) {
             throw new Error(
-                `Expected spacing ${spacing}px between parallel horizontal lines, but found ${offset}px`
+                `Expected spacing ${spacing}px between parallel horizontal lines, but found ${offset}px`,
             );
         }
     } else {
@@ -224,7 +228,7 @@ export function assertDoubleLine(lines: Line[], spacing = 3, tolerance = 1) {
         const offset = Math.abs(line1.y1 - line2.y1);
         if (Math.abs(offset - spacing) > tolerance) {
             throw new Error(
-                `Expected spacing ~${spacing}px between parallel lines, but found ${offset}px`
+                `Expected spacing ~${spacing}px between parallel lines, but found ${offset}px`,
             );
         }
     }
@@ -233,12 +237,16 @@ export function assertDoubleLine(lines: Line[], spacing = 3, tolerance = 1) {
 /**
  * Assert that an element is centered on a symbol
  */
-export function assertCentered(element: { x: number }, symbol: { x: number }, tolerance = 1) {
+export function assertCentered(
+    element: { x: number },
+    symbol: { x: number },
+    tolerance = 1,
+) {
     const offset = Math.abs(element.x - symbol.x);
     if (offset >= tolerance) {
         throw new Error(
             `Expected element at x=${element.x} to be centered on symbol at x=${symbol.x}. ` +
-            `Offset = ${offset}, tolerance = ${tolerance}`
+                `Offset = ${offset}, tolerance = ${tolerance}`,
         );
     }
 }
@@ -250,14 +258,18 @@ export function findLineBetween(
     lines: Line[],
     from: { x: number; y: number },
     to: { x: number; y: number },
-    tolerance = 5
+    tolerance = 5,
 ): Line | undefined {
     return lines.find(
         line =>
-            (Math.abs(line.x1 - from.x) < tolerance && Math.abs(line.y1 - from.y) < tolerance &&
-             Math.abs(line.x2 - to.x) < tolerance && Math.abs(line.y2 - to.y) < tolerance) ||
-            (Math.abs(line.x1 - to.x) < tolerance && Math.abs(line.y1 - to.y) < tolerance &&
-             Math.abs(line.x2 - from.x) < tolerance && Math.abs(line.y2 - from.y) < tolerance)
+            (Math.abs(line.x1 - from.x) < tolerance &&
+                Math.abs(line.y1 - from.y) < tolerance &&
+                Math.abs(line.x2 - to.x) < tolerance &&
+                Math.abs(line.y2 - to.y) < tolerance) ||
+            (Math.abs(line.x1 - to.x) < tolerance &&
+                Math.abs(line.y1 - to.y) < tolerance &&
+                Math.abs(line.x2 - from.x) < tolerance &&
+                Math.abs(line.y2 - from.y) < tolerance),
     );
 }
 
@@ -267,12 +279,12 @@ export function findLineBetween(
 export function findLinesFrom(
     lines: Line[],
     from: { x: number; y: number },
-    tolerance = 1
+    tolerance = 1,
 ): Line[] {
     return lines.filter(
         line =>
             Math.abs(line.x1 - from.x) < tolerance &&
-            Math.abs(line.y1 - from.y) < tolerance
+            Math.abs(line.y1 - from.y) < tolerance,
     );
 }
 
@@ -298,7 +310,7 @@ export function getMinimumXSpacing(positions: Array<{ x: number }>): number {
  */
 export function groupByGeneration(
     positions: Array<{ x: number; y: number }>,
-    tolerance = 1
+    tolerance = 1,
 ): Map<number, Array<{ x: number; y: number }>> {
     const groups = new Map<number, Array<{ x: number; y: number }>>();
 

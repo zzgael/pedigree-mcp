@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { PedigreeRenderer } from '../src/renderer/pedigree-renderer.js';
 import type { Individual } from '../src/types.js';
-import { extractSvgElements, extractSymbols, extractText, assertCentered } from './test-helpers.js';
+import {
+    extractSvgElements,
+    extractSymbols,
+    extractText,
+    assertCentered,
+} from './test-helpers.js';
 
 describe('PedigreeRenderer', () => {
     describe('validation', () => {
@@ -169,7 +174,8 @@ describe('PedigreeRenderer', () => {
             expect(paths.length).toBeGreaterThanOrEqual(2); // Left and right brackets
 
             // Verify the group transform matches the calculated position
-            const groupRegex = /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
+            const groupRegex =
+                /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
             let foundAdoptedGroup = false;
             let groupMatch;
             while ((groupMatch = groupRegex.exec(svg)) !== null) {
@@ -177,7 +183,10 @@ describe('PedigreeRenderer', () => {
                 const groupY = parseFloat(groupMatch[2]);
 
                 // Check if this group matches adopted position
-                if (Math.abs(groupX - adoptedPos.x) < 1 && Math.abs(groupY - adoptedPos.y) < 1) {
+                if (
+                    Math.abs(groupX - adoptedPos.x) < 1 &&
+                    Math.abs(groupY - adoptedPos.y) < 1
+                ) {
                     foundAdoptedGroup = true;
                     break;
                 }
@@ -229,8 +238,14 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Extract all lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -247,15 +262,17 @@ describe('PedigreeRenderer', () => {
             // Twin bar is a horizontal line above the twin symbols
             // Find lines that are horizontal
             const horizontalLines = lines.filter(
-                line => Math.abs(line.y1 - line.y2) < 1 // Horizontal
+                line => Math.abs(line.y1 - line.y2) < 1, // Horizontal
             );
 
             // Find twin bar (should span from t1 X to t2 X and be above the twins)
             const twinBar = horizontalLines.find(
                 line =>
                     line.y1 < t1Pos.y && // Above the twins
-                    ((Math.abs(line.x1 - t1Pos.x) < 5 && Math.abs(line.x2 - t2Pos.x) < 5) ||
-                     (Math.abs(line.x1 - t2Pos.x) < 5 && Math.abs(line.x2 - t1Pos.x) < 5))
+                    ((Math.abs(line.x1 - t1Pos.x) < 5 &&
+                        Math.abs(line.x2 - t2Pos.x) < 5) ||
+                        (Math.abs(line.x1 - t2Pos.x) < 5 &&
+                            Math.abs(line.x2 - t1Pos.x) < 5)),
             );
 
             expect(twinBar).toBeDefined();
@@ -299,8 +316,14 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Extract all lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -320,8 +343,10 @@ describe('PedigreeRenderer', () => {
                 line =>
                     Math.abs(line.y1 - line.y2) < 1 && // Horizontal
                     Math.abs(line.y1 - cousin1Pos.y) < 5 && // At cousins' Y position
-                    ((Math.abs(line.x1 - cousin1Pos.x) < 10 && Math.abs(line.x2 - cousin2Pos.x) < 10) ||
-                     (Math.abs(line.x1 - cousin2Pos.x) < 10 && Math.abs(line.x2 - cousin1Pos.x) < 10))
+                    ((Math.abs(line.x1 - cousin1Pos.x) < 10 &&
+                        Math.abs(line.x2 - cousin2Pos.x) < 10) ||
+                        (Math.abs(line.x1 - cousin2Pos.x) < 10 &&
+                            Math.abs(line.x2 - cousin1Pos.x) < 10)),
             );
 
             // Consanguineous partnerships should have double line (2 parallel lines)
@@ -457,8 +482,14 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Extract all lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -477,18 +508,23 @@ describe('PedigreeRenderer', () => {
                 line =>
                     Math.abs(line.y1 - line.y2) < 1 && // Horizontal
                     Math.abs(line.y1 - gfPos.y) < 1 && // At partner Y position
-                    ((Math.abs(line.x1 - gfPos.x) < 5 && Math.abs(line.x2 - gmPos.x) < 5) ||
-                     (Math.abs(line.x1 - gmPos.x) < 5 && Math.abs(line.x2 - gfPos.x) < 5))
+                    ((Math.abs(line.x1 - gfPos.x) < 5 &&
+                        Math.abs(line.x2 - gmPos.x) < 5) ||
+                        (Math.abs(line.x1 - gmPos.x) < 5 &&
+                            Math.abs(line.x2 - gfPos.x) < 5)),
             );
 
             expect(partnershipLine).toBeDefined();
 
             if (partnershipLine) {
                 // Partnership line should be horizontal
-                expect(Math.abs(partnershipLine.y1 - partnershipLine.y2)).toBeLessThan(1);
+                expect(
+                    Math.abs(partnershipLine.y1 - partnershipLine.y2),
+                ).toBeLessThan(1);
 
                 // Calculate partnership midpoint
-                const partnershipMidX = (partnershipLine.x1 + partnershipLine.x2) / 2;
+                const partnershipMidX =
+                    (partnershipLine.x1 + partnershipLine.x2) / 2;
                 const partnershipY = partnershipLine.y1;
 
                 // Find vertical drop from partnership to sibship level
@@ -498,7 +534,7 @@ describe('PedigreeRenderer', () => {
                         Math.abs(line.x1 - line.x2) < 1 && // Vertical
                         Math.abs(line.x1 - partnershipMidX) < 1 && // At partnership midpoint
                         Math.abs(line.y1 - partnershipY) < 5 && // Starts at partnership
-                        Math.abs(line.y2 - sibshipY) < 10 // Ends at sibship level
+                        Math.abs(line.y2 - sibshipY) < 10, // Ends at sibship level
                 );
 
                 expect(verticalDrop).toBeDefined();
@@ -512,7 +548,7 @@ describe('PedigreeRenderer', () => {
                         Math.abs(line.x1 - childPos.x) < 1 && // At child X position
                         line.y1 < childPos.y && // Starts above child
                         line.y2 > sibshipY && // Ends below sibship
-                        line.y2 <= childPos.y // Ends at or before child center
+                        line.y2 <= childPos.y, // Ends at or before child center
                 );
 
                 expect(childConnection).toBeDefined();
@@ -819,8 +855,14 @@ describe('PedigreeRenderer', () => {
             expect(childPos.y).toBeGreaterThan(fPos.y);
 
             // Extract all lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -841,14 +883,16 @@ describe('PedigreeRenderer', () => {
                 line =>
                     Math.abs(line.y1 - line.y2) < 1 && // Horizontal
                     Math.abs(line.y1 - sibshipY) < 20 && // At sibship Y level
-                    line.x2 - line.x1 > 50 // Long enough to span siblings
+                    line.x2 - line.x1 > 50, // Long enough to span siblings
             );
 
             expect(sibshipLine).toBeDefined();
 
             if (sibshipLine) {
                 // Sibship line should be horizontal
-                expect(Math.abs(sibshipLine.y1 - sibshipLine.y2)).toBeLessThan(1);
+                expect(Math.abs(sibshipLine.y1 - sibshipLine.y2)).toBeLessThan(
+                    1,
+                );
 
                 // Sibship line should be at the expected Y position
                 expect(Math.abs(sibshipLine.y1 - sibshipY)).toBeLessThan(20);
@@ -917,13 +961,15 @@ describe('PedigreeRenderer', () => {
 
             // Assert partnerships are aligned (same Y)
             expect(gggfPos.y).toBe(gggmPos.y); // Gen 0 partners
-            expect(ggfPos.y).toBe(ggmPos.y);   // Gen 1 partners
-            expect(gfPos.y).toBe(gmPos.y);     // Gen 2 partners
-            expect(dadPos.y).toBe(momPos.y);   // Gen 3 partners
+            expect(ggfPos.y).toBe(ggmPos.y); // Gen 1 partners
+            expect(gfPos.y).toBe(gmPos.y); // Gen 2 partners
+            expect(dadPos.y).toBe(momPos.y); // Gen 3 partners
 
             // Assert minimum X spacing between partners (should be symbol_size * 4 = 140px)
             const minNodeSpacing = 140;
-            expect(gggmPos.x - gggfPos.x).toBeGreaterThanOrEqual(minNodeSpacing);
+            expect(gggmPos.x - gggfPos.x).toBeGreaterThanOrEqual(
+                minNodeSpacing,
+            );
             expect(ggmPos.x - ggfPos.x).toBeGreaterThanOrEqual(minNodeSpacing);
             expect(gmPos.x - gfPos.x).toBeGreaterThanOrEqual(minNodeSpacing);
             expect(momPos.x - dadPos.x).toBeGreaterThanOrEqual(minNodeSpacing);
@@ -1045,7 +1091,9 @@ describe('PedigreeRenderer', () => {
 
             // Half-siblings should have spacing
             const minNodeSpacing = 140;
-            expect(Math.abs(c2Pos.x - c1Pos.x)).toBeGreaterThanOrEqual(minNodeSpacing);
+            expect(Math.abs(c2Pos.x - c1Pos.x)).toBeGreaterThanOrEqual(
+                minNodeSpacing,
+            );
 
             // Render SVG and verify elements
             const svg = renderer.renderSvg();
@@ -1306,7 +1354,13 @@ describe('PedigreeRenderer', () => {
         it('should calculate correct generations regardless of dataset order', () => {
             // Regression test: child defined before parents should still be in correct generation
             const dataset: Individual[] = [
-                { name: 'Proband', sex: 'M', mother: 'Mère', father: 'Père', proband: true },
+                {
+                    name: 'Proband',
+                    sex: 'M',
+                    mother: 'Mère',
+                    father: 'Père',
+                    proband: true,
+                },
                 { name: 'Père', sex: 'M', father: 'GP Pat' },
                 { name: 'Mère', sex: 'F', top_level: true },
                 { name: 'Soeur', sex: 'F', mother: 'Mère', father: 'Père' },
@@ -1329,7 +1383,13 @@ describe('PedigreeRenderer', () => {
         it('should align partners from different generations to same Y-coordinate', () => {
             // Regression test: Père (gen 1, has parent) + Mère (gen 0, founder) should be at same Y
             const dataset: Individual[] = [
-                { name: 'Proband', sex: 'M', mother: 'Mère', father: 'Père', proband: true },
+                {
+                    name: 'Proband',
+                    sex: 'M',
+                    mother: 'Mère',
+                    father: 'Père',
+                    proband: true,
+                },
                 { name: 'Père', sex: 'M', father: 'GP Pat' },
                 { name: 'Mère', sex: 'F', top_level: true },
                 { name: 'Soeur', sex: 'F', mother: 'Mère', father: 'Père' },
@@ -1452,8 +1512,8 @@ describe('PedigreeRenderer', () => {
             // the line from grandpa->dad should drop VERTICALLY from grandpa, not diagonally to dad
             const dataset: Individual[] = [
                 { name: 'grandpa', sex: 'M', top_level: true },
-                { name: 'dad', sex: 'M', father: 'grandpa' },  // Single-parent from grandpa
-                { name: 'mom', sex: 'F', top_level: true },    // Dad's partner
+                { name: 'dad', sex: 'M', father: 'grandpa' }, // Single-parent from grandpa
+                { name: 'mom', sex: 'F', top_level: true }, // Dad's partner
                 { name: 'child', sex: 'F', mother: 'mom', father: 'dad' },
             ];
 
@@ -1466,8 +1526,14 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Extract all lines with their coordinates
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -1483,24 +1549,27 @@ describe('PedigreeRenderer', () => {
                 line =>
                     Math.abs(line.x1 - grandpaPos.x) < 1 &&
                     Math.abs(line.y1 - grandpaPos.y) < 1 &&
-                    line.y2 > line.y1  // Going downward
+                    line.y2 > line.y1, // Going downward
             );
 
             expect(grandpaToDadLine).toBeDefined();
 
             // CRITICAL: Line must drop VERTICALLY from grandpa (x1 should equal grandpa.x)
             // It should NOT go diagonally to dad's position
-            expect(Math.abs(grandpaToDadLine!.x1 - grandpaPos.x)).toBeLessThan(1);
+            expect(Math.abs(grandpaToDadLine!.x1 - grandpaPos.x)).toBeLessThan(
+                1,
+            );
 
             // The line should drop straight down from grandpa, NOT diagonally to dad
             // x2 should be close to x1 (vertical line) or close to grandpa.x
-            const isVertical = Math.abs(grandpaToDadLine!.x1 - grandpaToDadLine!.x2) < 1;
+            const isVertical =
+                Math.abs(grandpaToDadLine!.x1 - grandpaToDadLine!.x2) < 1;
 
             if (!isVertical) {
                 throw new Error(
                     `Grandpa->Dad line is DIAGONAL: (${grandpaToDadLine!.x1}, ${grandpaToDadLine!.y1}) -> (${grandpaToDadLine!.x2}, ${grandpaToDadLine!.y2}). ` +
-                    `Expected vertical line from grandpa at x=${grandpaPos.x}. ` +
-                    `Line should drop straight down, not go to dad at x=${dadPos.x}.`
+                        `Expected vertical line from grandpa at x=${grandpaPos.x}. ` +
+                        `Line should drop straight down, not go to dad at x=${dadPos.x}.`,
                 );
             }
         });
@@ -1509,9 +1578,9 @@ describe('PedigreeRenderer', () => {
             // Test that multiple siblings from same single parent get horizontal sibship line
             const dataset: Individual[] = [
                 { name: 'grandma', sex: 'F', top_level: true },
-                { name: 'uncle', sex: 'M', mother: 'grandma' },  // First sibling
-                { name: 'mom', sex: 'M', mother: 'grandma' },    // Second sibling
-                { name: 'aunt', sex: 'F', mother: 'grandma' },   // Third sibling
+                { name: 'uncle', sex: 'M', mother: 'grandma' }, // First sibling
+                { name: 'mom', sex: 'M', mother: 'grandma' }, // Second sibling
+                { name: 'aunt', sex: 'F', mother: 'grandma' }, // Third sibling
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -1525,8 +1594,14 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Extract all lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -1543,7 +1618,7 @@ describe('PedigreeRenderer', () => {
                 line =>
                     Math.abs(line.x1 - grandmaPos.x) < 1 &&
                     Math.abs(line.x2 - grandmaPos.x) < 1 &&
-                    Math.abs(line.y2 - sibshipY) < 1
+                    Math.abs(line.y2 - sibshipY) < 1,
             );
 
             expect(verticalDrop).toBeDefined();
@@ -1551,8 +1626,8 @@ describe('PedigreeRenderer', () => {
             // Find horizontal sibship line (should span all siblings)
             const horizontalLines = lines.filter(
                 line =>
-                    Math.abs(line.y1 - line.y2) < 1 &&  // Horizontal
-                    Math.abs(line.y1 - sibshipY) < 1    // At sibship Y
+                    Math.abs(line.y1 - line.y2) < 1 && // Horizontal
+                    Math.abs(line.y1 - sibshipY) < 1, // At sibship Y
             );
 
             // Should have at least one horizontal line at sibship level
@@ -1579,7 +1654,13 @@ describe('PedigreeRenderer', () => {
                 { name: 'dad', sex: 'M', mother: 'ggm', father: 'ggf' },
                 { name: 'mom', sex: 'F', top_level: true },
                 // Gen 3: Proband (child of dad+mom)
-                { name: 'p', sex: 'F', mother: 'mom', father: 'dad', proband: true },
+                {
+                    name: 'p',
+                    sex: 'F',
+                    mother: 'mom',
+                    father: 'dad',
+                    proband: true,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -1621,7 +1702,12 @@ describe('PedigreeRenderer', () => {
                 { name: 'mom', sex: 'F', top_level: true },
                 { name: 'uncle_spouse', sex: 'M', top_level: true },
                 { name: 'child', sex: 'F', mother: 'mom', father: 'dad' },
-                { name: 'cousin', sex: 'M', mother: 'aunt', father: 'uncle_spouse' },
+                {
+                    name: 'cousin',
+                    sex: 'M',
+                    mother: 'aunt',
+                    father: 'uncle_spouse',
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -1666,7 +1752,9 @@ describe('PedigreeRenderer', () => {
 
             // Siblings (dad, aunt) should have spacing
             const minNodeSpacing = 140;
-            expect(Math.abs(auntPos.x - dadPos.x)).toBeGreaterThanOrEqual(minNodeSpacing);
+            expect(Math.abs(auntPos.x - dadPos.x)).toBeGreaterThanOrEqual(
+                minNodeSpacing,
+            );
         });
     });
 
@@ -1706,14 +1794,18 @@ describe('PedigreeRenderer', () => {
 
             // Both circles should be in same group transform (same position)
             // Verify the group transform matches the calculated position
-            const groupRegex = /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
+            const groupRegex =
+                /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
             let groupMatch;
             while ((groupMatch = groupRegex.exec(svg)) !== null) {
                 const groupX = parseFloat(groupMatch[1]);
                 const groupY = parseFloat(groupMatch[2]);
 
                 // Check if this group matches carrier position
-                if (Math.abs(groupX - carrierPos.x) < 1 && Math.abs(groupY - carrierPos.y) < 1) {
+                if (
+                    Math.abs(groupX - carrierPos.x) < 1 &&
+                    Math.abs(groupY - carrierPos.y) < 1
+                ) {
                     // Found the carrier's group - verify it contains both circles
                     expect(svg).toContain('carrier'); // Should have the label
                     break;
@@ -1737,7 +1829,8 @@ describe('PedigreeRenderer', () => {
             expect(svg).toContain('>P<');
 
             // Verify the group transform matches the calculated position
-            const groupRegex = /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
+            const groupRegex =
+                /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
             let foundPregnantGroup = false;
             let groupMatch;
             while ((groupMatch = groupRegex.exec(svg)) !== null) {
@@ -1745,7 +1838,10 @@ describe('PedigreeRenderer', () => {
                 const groupY = parseFloat(groupMatch[2]);
 
                 // Check if this group matches pregnant position
-                if (Math.abs(groupX - pregnantPos.x) < 1 && Math.abs(groupY - pregnantPos.y) < 1) {
+                if (
+                    Math.abs(groupX - pregnantPos.x) < 1 &&
+                    Math.abs(groupY - pregnantPos.y) < 1
+                ) {
                     foundPregnantGroup = true;
                     // Found the pregnant's group - verify it contains "P" text
                     expect(svg).toContain('>P<');
@@ -1858,8 +1954,14 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Extract all lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -1879,19 +1981,26 @@ describe('PedigreeRenderer', () => {
                 line =>
                     Math.abs(line.y1 - line.y2) < 1 && // Horizontal
                     Math.abs(line.y1 - exhusbandPos.y) < 1 && // At partner Y position
-                    ((Math.abs(line.x1 - exhusbandPos.x) < 5 && Math.abs(line.x2 - exwifePos.x) < 5) ||
-                     (Math.abs(line.x1 - exwifePos.x) < 5 && Math.abs(line.x2 - exhusbandPos.x) < 5))
+                    ((Math.abs(line.x1 - exhusbandPos.x) < 5 &&
+                        Math.abs(line.x2 - exwifePos.x) < 5) ||
+                        (Math.abs(line.x1 - exwifePos.x) < 5 &&
+                            Math.abs(line.x2 - exhusbandPos.x) < 5)),
             );
 
             expect(partnershipLine).toBeDefined();
 
             if (partnershipLine) {
                 // Partnership line should be horizontal at partners' Y position
-                expect(Math.abs(partnershipLine.y1 - partnershipLine.y2)).toBeLessThan(1);
-                expect(Math.abs(partnershipLine.y1 - exhusbandPos.y)).toBeLessThan(1);
+                expect(
+                    Math.abs(partnershipLine.y1 - partnershipLine.y2),
+                ).toBeLessThan(1);
+                expect(
+                    Math.abs(partnershipLine.y1 - exhusbandPos.y),
+                ).toBeLessThan(1);
 
                 // Calculate partnership midpoint (where hash marks should be)
-                const partnershipMidX = (partnershipLine.x1 + partnershipLine.x2) / 2;
+                const partnershipMidX =
+                    (partnershipLine.x1 + partnershipLine.x2) / 2;
                 const partnershipY = partnershipLine.y1;
 
                 // Find hash marks (small diagonal lines near midpoint)
@@ -1915,7 +2024,9 @@ describe('PedigreeRenderer', () => {
                 for (const hashMark of hashMarks.slice(0, 2)) {
                     const hashMidX = (hashMark.x1 + hashMark.x2) / 2;
                     const hashMidY = (hashMark.y1 + hashMark.y2) / 2;
-                    expect(Math.abs(hashMidX - partnershipMidX)).toBeLessThan(10);
+                    expect(Math.abs(hashMidX - partnershipMidX)).toBeLessThan(
+                        10,
+                    );
                     expect(Math.abs(hashMidY - partnershipY)).toBeLessThan(10);
                 }
             }
@@ -1957,8 +2068,14 @@ describe('PedigreeRenderer', () => {
             expect(dz1Pos.y).toBe(dz2Pos.y);
 
             // Extract all lines
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -1979,8 +2096,10 @@ describe('PedigreeRenderer', () => {
                 line =>
                     Math.abs(line.y1 - line.y2) < 1 && // Horizontal
                     Math.abs(line.y1 - expectedTwinBarY) < 5 && // At expected twin bar Y
-                    ((Math.abs(line.x1 - dz1Pos.x) < 5 && Math.abs(line.x2 - dz2Pos.x) < 5) ||
-                     (Math.abs(line.x1 - dz2Pos.x) < 5 && Math.abs(line.x2 - dz1Pos.x) < 5))
+                    ((Math.abs(line.x1 - dz1Pos.x) < 5 &&
+                        Math.abs(line.x2 - dz2Pos.x) < 5) ||
+                        (Math.abs(line.x1 - dz2Pos.x) < 5 &&
+                            Math.abs(line.x2 - dz1Pos.x) < 5)),
             );
 
             // CRITICAL: DZ twins should NOT have a twin bar
@@ -2039,14 +2158,18 @@ describe('PedigreeRenderer', () => {
             expect(svg).toContain('>A<');
 
             // Verify the group transform matches the calculated position
-            const groupRegex = /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
+            const groupRegex =
+                /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
             let foundGroup = false;
             let match;
             while ((match = groupRegex.exec(svg)) !== null) {
                 const groupX = parseFloat(match[1]);
                 const groupY = parseFloat(match[2]);
 
-                if (Math.abs(groupX - ashkenaziPos.x) < 1 && Math.abs(groupY - ashkenaziPos.y) < 1) {
+                if (
+                    Math.abs(groupX - ashkenaziPos.x) < 1 &&
+                    Math.abs(groupY - ashkenaziPos.y) < 1
+                ) {
                     foundGroup = true;
                     break;
                 }
@@ -2122,7 +2245,8 @@ describe('PedigreeRenderer', () => {
             expect(carrierDot).toBeDefined();
 
             // Verify the group transform matches the calculated position
-            const groupRegex = /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
+            const groupRegex =
+                /<g[^>]*transform="translate\(([^,]+),\s*([^)]+)\)"[^>]*>/g;
             let foundComplexGroup = false;
             let groupMatch;
             while ((groupMatch = groupRegex.exec(svg)) !== null) {
@@ -2130,7 +2254,10 @@ describe('PedigreeRenderer', () => {
                 const groupY = parseFloat(groupMatch[2]);
 
                 // Check if this group matches complex position
-                if (Math.abs(groupX - complexPos.x) < 1 && Math.abs(groupY - complexPos.y) < 1) {
+                if (
+                    Math.abs(groupX - complexPos.x) < 1 &&
+                    Math.abs(groupY - complexPos.y) < 1
+                ) {
                     foundComplexGroup = true;
                     break;
                 }
@@ -2140,8 +2267,14 @@ describe('PedigreeRenderer', () => {
 
             // Extract deceased line (diagonal line through symbol)
             // Note: Lines use relative coordinates within the group transform
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let lineMatch;
             while ((lineMatch = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -2162,7 +2295,7 @@ describe('PedigreeRenderer', () => {
                     Math.abs(lineCenterX) < 5 && // Centered at x=0 (relative to group)
                     Math.abs(lineCenterY) < 5 && // Centered at y=0 (relative to group)
                     Math.abs(line.y2 - line.y1) > 10 && // Diagonal (has Y distance)
-                    Math.abs(line.x2 - line.x1) > 10   // Diagonal (has X distance)
+                    Math.abs(line.x2 - line.x1) > 10 // Diagonal (has X distance)
                 );
             });
             expect(deceasedLine).toBeDefined();
@@ -2225,8 +2358,14 @@ describe('PedigreeRenderer', () => {
 
             // Should have a diagonal slash line through the triangle
             // The slash should be a line element with both dx and dy (diagonal)
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -2306,7 +2445,9 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Should have polygon for triangle
-            const polygonMatch = svg.match(/<polygon[^>]*points="([^"]*)"[^>]*>/);
+            const polygonMatch = svg.match(
+                /<polygon[^>]*points="([^"]*)"[^>]*>/,
+            );
             expect(polygonMatch).not.toBeNull();
 
             if (polygonMatch) {
@@ -2319,7 +2460,8 @@ describe('PedigreeRenderer', () => {
 
                 // Calculate approximate size (distance from top to bottom)
                 const yValues = coords.map(c => c.y);
-                const triangleHeight = Math.max(...yValues) - Math.min(...yValues);
+                const triangleHeight =
+                    Math.max(...yValues) - Math.min(...yValues);
 
                 // Stillbirth triangle should be larger (symbolSize/2.5 ≈ 14 with default symbolSize 35)
                 // vs early loss (symbolSize/3 ≈ 11.67)
@@ -2342,7 +2484,9 @@ describe('PedigreeRenderer', () => {
             const svg = renderer.renderSvg();
 
             // Should have polygon for triangle
-            const polygonMatch = svg.match(/<polygon[^>]*points="([^"]*)"[^>]*>/);
+            const polygonMatch = svg.match(
+                /<polygon[^>]*points="([^"]*)"[^>]*>/,
+            );
             expect(polygonMatch).not.toBeNull();
 
             if (polygonMatch) {
@@ -2355,7 +2499,8 @@ describe('PedigreeRenderer', () => {
 
                 // Calculate approximate size (distance from top to bottom)
                 const yValues = coords.map(c => c.y);
-                const triangleHeight = Math.max(...yValues) - Math.min(...yValues);
+                const triangleHeight =
+                    Math.max(...yValues) - Math.min(...yValues);
 
                 // Early loss triangle should be smaller (symbolSize/3 ≈ 11.67 with default symbolSize 35)
                 // Actual height is about 23.33 (2/3 of symbolSize for the full triangle height)
@@ -2389,9 +2534,19 @@ describe('PedigreeRenderer', () => {
                     father: 'uncle2',
                 },
                 // Parents generation (siblings)
-                { name: 'aunt', sex: 'F', mother: 'grandma', father: 'grandpa' },
+                {
+                    name: 'aunt',
+                    sex: 'F',
+                    mother: 'grandma',
+                    father: 'grandpa',
+                },
                 { name: 'uncle1', sex: 'M' },
-                { name: 'mother', sex: 'F', mother: 'grandma', father: 'grandpa' },
+                {
+                    name: 'mother',
+                    sex: 'F',
+                    mother: 'grandma',
+                    father: 'grandpa',
+                },
                 { name: 'uncle2', sex: 'M' },
                 // Grandparents
                 { name: 'grandma', sex: 'F', top_level: true },
@@ -2873,8 +3028,22 @@ describe('PedigreeRenderer', () => {
             const dataset: Individual[] = [
                 { name: 'Dad', sex: 'M', top_level: true },
                 { name: 'Mom', sex: 'F', top_level: true },
-                { name: 'DZTwin1', sex: 'M', mother: 'Mom', father: 'Dad', dztwin: 'dz1', age: 8 },
-                { name: 'DZTwin2', sex: 'F', mother: 'Mom', father: 'Dad', dztwin: 'dz1', age: 8 },
+                {
+                    name: 'DZTwin1',
+                    sex: 'M',
+                    mother: 'Mom',
+                    father: 'Dad',
+                    dztwin: 'dz1',
+                    age: 8,
+                },
+                {
+                    name: 'DZTwin2',
+                    sex: 'F',
+                    mother: 'Mom',
+                    father: 'Dad',
+                    dztwin: 'dz1',
+                    age: 8,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -2886,8 +3055,14 @@ describe('PedigreeRenderer', () => {
             const twin2Pos = renderer.nodePositions.get('DZTwin2');
 
             // Extract all lines from SVG
-            const lineRegex = /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
-            const lines: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+            const lineRegex =
+                /<line[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"[^>]*>/g;
+            const lines: Array<{
+                x1: number;
+                y1: number;
+                x2: number;
+                y2: number;
+            }> = [];
             let match;
             while ((match = lineRegex.exec(svg)) !== null) {
                 lines.push({
@@ -2912,8 +3087,12 @@ describe('PedigreeRenderer', () => {
                 const isDiagonal = dx > 10 && dy > 10;
 
                 // Check if line connects to either twin's position
-                const connectsToTwin1 = Math.abs(line.x2 - twin1Pos.x) < 5 || Math.abs(line.x1 - twin1Pos.x) < 5;
-                const connectsToTwin2 = Math.abs(line.x2 - twin2Pos.x) < 5 || Math.abs(line.x1 - twin2Pos.x) < 5;
+                const connectsToTwin1 =
+                    Math.abs(line.x2 - twin1Pos.x) < 5 ||
+                    Math.abs(line.x1 - twin1Pos.x) < 5;
+                const connectsToTwin2 =
+                    Math.abs(line.x2 - twin2Pos.x) < 5 ||
+                    Math.abs(line.x1 - twin2Pos.x) < 5;
 
                 return isDiagonal && (connectsToTwin1 || connectsToTwin2);
             });
@@ -2930,10 +3109,14 @@ describe('PedigreeRenderer', () => {
                 // The lines should meet at a common point (sibship line)
                 // Check if either endpoint is shared
                 const sharedPoint =
-                    (Math.abs(line1.x1 - line2.x1) < 5 && Math.abs(line1.y1 - line2.y1) < 5) ||
-                    (Math.abs(line1.x1 - line2.x2) < 5 && Math.abs(line1.y1 - line2.y2) < 5) ||
-                    (Math.abs(line1.x2 - line2.x1) < 5 && Math.abs(line1.y2 - line2.y1) < 5) ||
-                    (Math.abs(line1.x2 - line2.x2) < 5 && Math.abs(line1.y2 - line2.y2) < 5);
+                    (Math.abs(line1.x1 - line2.x1) < 5 &&
+                        Math.abs(line1.y1 - line2.y1) < 5) ||
+                    (Math.abs(line1.x1 - line2.x2) < 5 &&
+                        Math.abs(line1.y1 - line2.y2) < 5) ||
+                    (Math.abs(line1.x2 - line2.x1) < 5 &&
+                        Math.abs(line1.y2 - line2.y1) < 5) ||
+                    (Math.abs(line1.x2 - line2.x2) < 5 &&
+                        Math.abs(line1.y2 - line2.y2) < 5);
 
                 expect(sharedPoint).toBe(true);
             }
@@ -2941,7 +3124,12 @@ describe('PedigreeRenderer', () => {
 
         it('should render no children by choice indicator for childless couple', () => {
             const dataset: Individual[] = [
-                { name: 'husband', sex: 'M', top_level: true, no_children_by_choice: true },
+                {
+                    name: 'husband',
+                    sex: 'M',
+                    top_level: true,
+                    no_children_by_choice: true,
+                },
                 { name: 'wife', sex: 'F', top_level: true },
             ];
 
@@ -3023,10 +3211,27 @@ describe('PedigreeRenderer', () => {
             const dataset: Individual[] = [
                 { name: 'Husband', sex: 'M', top_level: true },
                 { name: 'Wife', sex: 'F', top_level: true },
-                { name: 'Child1', sex: 'M', mother: 'Wife', father: 'Husband', age: 10 },
+                {
+                    name: 'Child1',
+                    sex: 'M',
+                    mother: 'Wife',
+                    father: 'Husband',
+                    age: 10,
+                },
                 { name: 'Partner1', sex: 'M', top_level: true },
-                { name: 'Partner2', sex: 'F', top_level: true, relationship_type: 'unmarried' },
-                { name: 'Child2', sex: 'F', mother: 'Partner2', father: 'Partner1', age: 6 },
+                {
+                    name: 'Partner2',
+                    sex: 'F',
+                    top_level: true,
+                    relationship_type: 'unmarried',
+                },
+                {
+                    name: 'Child2',
+                    sex: 'F',
+                    mother: 'Partner2',
+                    father: 'Partner1',
+                    age: 6,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -3048,7 +3253,9 @@ describe('PedigreeRenderer', () => {
             // Verify Wife and Partner1 are properly spaced
             const wifePos = renderer.nodePositions.get('Wife');
             const partner1Pos = renderer.nodePositions.get('Partner1');
-            expect(Math.abs(wifePos.x - partner1Pos.x)).toBeGreaterThanOrEqual(70); // minNodeSpacing
+            expect(Math.abs(wifePos.x - partner1Pos.x)).toBeGreaterThanOrEqual(
+                70,
+            ); // minNodeSpacing
 
             // CRITICAL: Child2 should be centered below Partner1-Partner2 partnership
             const partner2Pos = renderer.nodePositions.get('Partner2');
@@ -3067,13 +3274,59 @@ describe('PedigreeRenderer', () => {
                 { name: 'Father', sex: 'M', top_level: true },
                 { name: 'Mother1', sex: 'F', divorced: true },
                 { name: 'Mother2', sex: 'F' },
-                { name: 'Child1', sex: 'F', mother: 'Mother1', father: 'Father', age: 30 },
-                { name: 'Child2', sex: 'M', mother: 'Mother1', father: 'Father', age: 28 },
-                { name: 'MZTwin1', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A', age: 12 },
-                { name: 'MZTwin2', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A', age: 12 },
-                { name: 'DZTwin1', sex: 'F', mother: 'Mother2', father: 'Father', dztwin: 'B', age: 8 },
-                { name: 'DZTwin2', sex: 'F', mother: 'Mother2', father: 'Father', dztwin: 'B', age: 8 },
-                { name: 'Youngest', sex: 'M', mother: 'Mother2', father: 'Father', age: 5 },
+                {
+                    name: 'Child1',
+                    sex: 'F',
+                    mother: 'Mother1',
+                    father: 'Father',
+                    age: 30,
+                },
+                {
+                    name: 'Child2',
+                    sex: 'M',
+                    mother: 'Mother1',
+                    father: 'Father',
+                    age: 28,
+                },
+                {
+                    name: 'MZTwin1',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    mztwin: 'A',
+                    age: 12,
+                },
+                {
+                    name: 'MZTwin2',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    mztwin: 'A',
+                    age: 12,
+                },
+                {
+                    name: 'DZTwin1',
+                    sex: 'F',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    dztwin: 'B',
+                    age: 8,
+                },
+                {
+                    name: 'DZTwin2',
+                    sex: 'F',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    dztwin: 'B',
+                    age: 8,
+                },
+                {
+                    name: 'Youngest',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    age: 5,
+                },
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -3095,17 +3348,34 @@ describe('PedigreeRenderer', () => {
             // Marriage 1 (Father + Mother1) should be centered above Child1, Child2
             const marriage1ChildrenMidX = (child1Pos.x + child2Pos.x) / 2;
             const marriage1PartnershipMidX = (fatherPos.x + mother1Pos.x) / 2;
-            expect(Math.abs(marriage1ChildrenMidX - marriage1PartnershipMidX)).toBeLessThan(1);
+            expect(
+                Math.abs(marriage1ChildrenMidX - marriage1PartnershipMidX),
+            ).toBeLessThan(1);
 
             // Marriage 2 (Father + Mother2) should be centered above their 5 children
-            const marriage2ChildrenMinX = Math.min(mz1Pos.x, mz2Pos.x, dz1Pos.x, dz2Pos.x, youngestPos.x);
-            const marriage2ChildrenMaxX = Math.max(mz1Pos.x, mz2Pos.x, dz1Pos.x, dz2Pos.x, youngestPos.x);
-            const marriage2ChildrenMidX = (marriage2ChildrenMinX + marriage2ChildrenMaxX) / 2;
+            const marriage2ChildrenMinX = Math.min(
+                mz1Pos.x,
+                mz2Pos.x,
+                dz1Pos.x,
+                dz2Pos.x,
+                youngestPos.x,
+            );
+            const marriage2ChildrenMaxX = Math.max(
+                mz1Pos.x,
+                mz2Pos.x,
+                dz1Pos.x,
+                dz2Pos.x,
+                youngestPos.x,
+            );
+            const marriage2ChildrenMidX =
+                (marriage2ChildrenMinX + marriage2ChildrenMaxX) / 2;
             const marriage2PartnershipMidX = (fatherPos.x + mother2Pos.x) / 2;
 
             // CRITICAL: This should be centered (< 1px tolerance)
             // Currently failing with 140px misalignment
-            expect(Math.abs(marriage2ChildrenMidX - marriage2PartnershipMidX)).toBeLessThan(1);
+            expect(
+                Math.abs(marriage2ChildrenMidX - marriage2PartnershipMidX),
+            ).toBeLessThan(1);
         });
 
         it('should render child of serial marriage with proper vertical line (TDD)', () => {
@@ -3138,13 +3408,50 @@ describe('PedigreeRenderer', () => {
                 { name: 'Uncle3', sex: 'M', top_level: true },
 
                 // Generation 3
-                { name: 'Cousin1', sex: 'F', mother: 'Aunt1', father: 'Uncle1' },
-                { name: 'Cousin2', sex: 'M', mother: 'Aunt2', father: 'Uncle2' },
-                { name: 'Child1', sex: 'F', mother: 'Mother1', father: 'Father' },
-                { name: 'Child2', sex: 'M', mother: 'Mother1', father: 'Father' },
-                { name: 'MZTwin1', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A' },
-                { name: 'MZTwin2', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A' },
-                { name: 'Cousin3', sex: 'F', mother: 'Aunt3', father: 'Uncle3' }, // Problem child
+                {
+                    name: 'Cousin1',
+                    sex: 'F',
+                    mother: 'Aunt1',
+                    father: 'Uncle1',
+                },
+                {
+                    name: 'Cousin2',
+                    sex: 'M',
+                    mother: 'Aunt2',
+                    father: 'Uncle2',
+                },
+                {
+                    name: 'Child1',
+                    sex: 'F',
+                    mother: 'Mother1',
+                    father: 'Father',
+                },
+                {
+                    name: 'Child2',
+                    sex: 'M',
+                    mother: 'Mother1',
+                    father: 'Father',
+                },
+                {
+                    name: 'MZTwin1',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    mztwin: 'A',
+                },
+                {
+                    name: 'MZTwin2',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    mztwin: 'A',
+                },
+                {
+                    name: 'Cousin3',
+                    sex: 'F',
+                    mother: 'Aunt3',
+                    father: 'Uncle3',
+                }, // Problem child
             ];
 
             const renderer = new PedigreeRenderer(dataset) as any;
@@ -3165,63 +3472,269 @@ describe('PedigreeRenderer', () => {
             // ISSUE 2: Aunt3/Uncle3 partnership should be centered above Cousin3
             // Currently failing: Cousin3 is 350px off from partnership midpoint
             const aunt3PartnershipMidX = (aunt3Pos.x + uncle3Pos.x) / 2;
-            expect(Math.abs(aunt3PartnershipMidX - cousin3Pos.x)).toBeLessThan(1);
+            expect(Math.abs(aunt3PartnershipMidX - cousin3Pos.x)).toBeLessThan(
+                1,
+            );
 
             // ISSUE 3: Cousin3 should be directly below the Aunt3/Uncle3 partnership line
             // Not offset to the left
-            expect(cousin3Pos.x).toBeGreaterThan(Math.min(aunt3Pos.x, uncle3Pos.x));
-            expect(cousin3Pos.x).toBeLessThan(Math.max(aunt3Pos.x, uncle3Pos.x));
+            expect(cousin3Pos.x).toBeGreaterThan(
+                Math.min(aunt3Pos.x, uncle3Pos.x),
+            );
+            expect(cousin3Pos.x).toBeLessThan(
+                Math.max(aunt3Pos.x, uncle3Pos.x),
+            );
         });
 
         it('should render grandchild with vertical line from parents (TDD)', () => {
             // EXACT copy from 21-complex-pedigree example
             const dataset: Individual[] = [
                 // Generation 0: Great-grandparents
-                { name: 'GGF1', sex: 'M', top_level: true, status: 1, yob: 1920, yod: 1995 },
-                { name: 'GGM1', sex: 'F', top_level: true, status: 1, yob: 1925, yod: 2000 },
-                { name: 'GGF2', sex: 'M', top_level: true, status: 1, yob: 1918, yod: 1990, ashkenazi: 1 },
-                { name: 'GGM2', sex: 'F', top_level: true, status: 1, yob: 1922, yod: 1998 },
+                {
+                    name: 'GGF1',
+                    sex: 'M',
+                    top_level: true,
+                    status: 1,
+                    yob: 1920,
+                    yod: 1995,
+                },
+                {
+                    name: 'GGM1',
+                    sex: 'F',
+                    top_level: true,
+                    status: 1,
+                    yob: 1925,
+                    yod: 2000,
+                },
+                {
+                    name: 'GGF2',
+                    sex: 'M',
+                    top_level: true,
+                    status: 1,
+                    yob: 1918,
+                    yod: 1990,
+                    ashkenazi: 1,
+                },
+                {
+                    name: 'GGM2',
+                    sex: 'F',
+                    top_level: true,
+                    status: 1,
+                    yob: 1922,
+                    yod: 1998,
+                },
 
                 // Generation 1: Grandparents
-                { name: 'GF', sex: 'M', mother: 'GGM1', father: 'GGF1', status: 1, yob: 1940, yod: 2010, conditions: [{ name: 'Heart Disease', age: 65 }] },
-                { name: 'GM', sex: 'F', mother: 'GGM2', father: 'GGF2', status: 1, yob: 1945, yod: 2015, carrier: true },
+                {
+                    name: 'GF',
+                    sex: 'M',
+                    mother: 'GGM1',
+                    father: 'GGF1',
+                    status: 1,
+                    yob: 1940,
+                    yod: 2010,
+                    conditions: [{ name: 'Heart Disease', age: 65 }],
+                },
+                {
+                    name: 'GM',
+                    sex: 'F',
+                    mother: 'GGM2',
+                    father: 'GGF2',
+                    status: 1,
+                    yob: 1945,
+                    yod: 2015,
+                    carrier: true,
+                },
                 { name: 'GF2', sex: 'M', top_level: true, divorced: true },
 
                 // Generation 2: Parents and aunts/uncles
-                { name: 'Uncle1', sex: 'M', mother: 'GM', father: 'GF', divorced: true, conditions: [{ name: 'Diabetes', age: 50 }] },
+                {
+                    name: 'Uncle1',
+                    sex: 'M',
+                    mother: 'GM',
+                    father: 'GF',
+                    divorced: true,
+                    conditions: [{ name: 'Diabetes', age: 50 }],
+                },
                 { name: 'Aunt1', sex: 'F', top_level: true, infertility: true },
-                { name: 'Uncle2', sex: 'M', mother: 'GM', father: 'GF', gender: 'TM', age: 52 },
-                { name: 'Aunt2', sex: 'F', top_level: true, relationship_type: 'unmarried' },
-                { name: 'Father', sex: 'M', mother: 'GM', father: 'GF', proband: true, obligate_carrier: true, age: 55 },
-                { name: 'Mother1', sex: 'F', divorced: true, conditions: [{ name: 'Breast Cancer', age: 45 }] },
-                { name: 'Mother2', sex: 'F', art_type: 'egg_donor', brca1_gene_test: { type: 'T', result: 'P' } },
-                { name: 'Aunt3', sex: 'F', mother: 'GM', father: 'GF2', age: 48 },
-                { name: 'Uncle3', sex: 'M', top_level: true, consanguinity_degree: '1st cousins' as any },
+                {
+                    name: 'Uncle2',
+                    sex: 'M',
+                    mother: 'GM',
+                    father: 'GF',
+                    gender: 'TM',
+                    age: 52,
+                },
+                {
+                    name: 'Aunt2',
+                    sex: 'F',
+                    top_level: true,
+                    relationship_type: 'unmarried',
+                },
+                {
+                    name: 'Father',
+                    sex: 'M',
+                    mother: 'GM',
+                    father: 'GF',
+                    proband: true,
+                    obligate_carrier: true,
+                    age: 55,
+                },
+                {
+                    name: 'Mother1',
+                    sex: 'F',
+                    divorced: true,
+                    conditions: [{ name: 'Breast Cancer', age: 45 }],
+                },
+                {
+                    name: 'Mother2',
+                    sex: 'F',
+                    art_type: 'egg_donor',
+                    brca1_gene_test: { type: 'T', result: 'P' },
+                },
+                {
+                    name: 'Aunt3',
+                    sex: 'F',
+                    mother: 'GM',
+                    father: 'GF2',
+                    age: 48,
+                },
+                {
+                    name: 'Uncle3',
+                    sex: 'M',
+                    top_level: true,
+                    consanguinity_degree: '1st cousins' as any,
+                },
 
                 // Generation 2: Pregnancy losses
-                { name: 'SAB1', sex: 'U', mother: 'GM', father: 'GF', terminated: true, pregnancy_outcome: 'miscarriage' },
-                { name: 'Stillbirth1', sex: 'M', mother: 'GM', father: 'GF', terminated: true, pregnancy_outcome: 'stillbirth', terminated_age: 32 },
+                {
+                    name: 'SAB1',
+                    sex: 'U',
+                    mother: 'GM',
+                    father: 'GF',
+                    terminated: true,
+                    pregnancy_outcome: 'miscarriage',
+                },
+                {
+                    name: 'Stillbirth1',
+                    sex: 'M',
+                    mother: 'GM',
+                    father: 'GF',
+                    terminated: true,
+                    pregnancy_outcome: 'stillbirth',
+                    terminated_age: 32,
+                },
 
                 // Generation 3: Cousins and children
-                { name: 'Cousin1', sex: 'F', mother: 'Aunt1', father: 'Uncle1', carrier: true, age: 28, gene_copy_number: 'heterozygous' },
-                { name: 'Cousin2', sex: 'M', mother: 'Aunt2', father: 'Uncle2', age: 25, adoption_type: 'in' },
-                { name: 'Cousin3', sex: 'F', mother: 'Aunt3', father: 'Uncle3', age: 20, conditions: [{ name: 'Asthma', age: 8 }] },
+                {
+                    name: 'Cousin1',
+                    sex: 'F',
+                    mother: 'Aunt1',
+                    father: 'Uncle1',
+                    carrier: true,
+                    age: 28,
+                    gene_copy_number: 'heterozygous',
+                },
+                {
+                    name: 'Cousin2',
+                    sex: 'M',
+                    mother: 'Aunt2',
+                    father: 'Uncle2',
+                    age: 25,
+                    adoption_type: 'in',
+                },
+                {
+                    name: 'Cousin3',
+                    sex: 'F',
+                    mother: 'Aunt3',
+                    father: 'Uncle3',
+                    age: 20,
+                    conditions: [{ name: 'Asthma', age: 8 }],
+                },
 
                 // Father's first marriage children
-                { name: 'Child1', sex: 'F', mother: 'Mother1', father: 'Father', age: 30, conditions: [{ name: 'Depression', age: 25 }] },
-                { name: 'Child2', sex: 'M', mother: 'Mother1', father: 'Father', age: 28, brca1_gene_test: { type: 'T', result: 'N' } },
+                {
+                    name: 'Child1',
+                    sex: 'F',
+                    mother: 'Mother1',
+                    father: 'Father',
+                    age: 30,
+                    conditions: [{ name: 'Depression', age: 25 }],
+                },
+                {
+                    name: 'Child2',
+                    sex: 'M',
+                    mother: 'Mother1',
+                    father: 'Father',
+                    age: 28,
+                    brca1_gene_test: { type: 'T', result: 'N' },
+                },
 
                 // Father's second marriage children - MZ twins + DZ twins + singleton
-                { name: 'MZTwin1', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A', birth_order: 1, age: 12 },
-                { name: 'MZTwin2', sex: 'M', mother: 'Mother2', father: 'Father', mztwin: 'A', birth_order: 2, age: 12 },
-                { name: 'DZTwin1', sex: 'F', mother: 'Mother2', father: 'Father', dztwin: 'B', birth_order: 3, age: 8 },
-                { name: 'DZTwin2', sex: 'F', mother: 'Mother2', father: 'Father', dztwin: 'B', birth_order: 4, age: 8 },
-                { name: 'Youngest', sex: 'M', mother: 'Mother2', father: 'Father', birth_order: 5, age: 5 },
+                {
+                    name: 'MZTwin1',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    mztwin: 'A',
+                    birth_order: 1,
+                    age: 12,
+                },
+                {
+                    name: 'MZTwin2',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    mztwin: 'A',
+                    birth_order: 2,
+                    age: 12,
+                },
+                {
+                    name: 'DZTwin1',
+                    sex: 'F',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    dztwin: 'B',
+                    birth_order: 3,
+                    age: 8,
+                },
+                {
+                    name: 'DZTwin2',
+                    sex: 'F',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    dztwin: 'B',
+                    birth_order: 4,
+                    age: 8,
+                },
+                {
+                    name: 'Youngest',
+                    sex: 'M',
+                    mother: 'Mother2',
+                    father: 'Father',
+                    birth_order: 5,
+                    age: 5,
+                },
 
                 // Generation 4: Next generation (showing anticipation and prenatal testing)
-                { name: 'Grandchild1', sex: 'F', mother: 'Child1', father: 'Partner1', consultand: true, age: 8, anticipation: true },
+                {
+                    name: 'Grandchild1',
+                    sex: 'F',
+                    mother: 'Child1',
+                    father: 'Partner1',
+                    consultand: true,
+                    age: 8,
+                    anticipation: true,
+                },
                 { name: 'Partner1', sex: 'M', top_level: true },
-                { name: 'Grandchild2', sex: 'U', mother: 'Cousin3', father: 'Partner2', terminated: true, pregnancy_outcome: 'induced_termination' },
+                {
+                    name: 'Grandchild2',
+                    sex: 'U',
+                    mother: 'Cousin3',
+                    father: 'Partner2',
+                    terminated: true,
+                    pregnancy_outcome: 'induced_termination',
+                },
                 { name: 'Partner2', sex: 'M', top_level: true },
             ];
 
@@ -3234,7 +3747,9 @@ describe('PedigreeRenderer', () => {
 
             // Partner1/Child1 partnership should be centered above Grandchild1
             const partnershipMidX = (partner1Pos.x + child1Pos.x) / 2;
-            expect(Math.abs(partnershipMidX - grandchild1Pos.x)).toBeLessThan(1);
+            expect(Math.abs(partnershipMidX - grandchild1Pos.x)).toBeLessThan(
+                1,
+            );
         });
     });
 });
