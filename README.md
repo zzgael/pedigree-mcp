@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">
+  <a href="https://lobehub.com/mcp/zzgael-pedigree-mcp"><img src="https://lobehub.com/badge/mcp/zzgael-pedigree-mcp" alt="MCP Badge"></a>
   <a href="https://github.com/zzgael/pedigree-mcp/actions/workflows/ci.yml"><img src="https://github.com/zzgael/pedigree-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/v/pedigree-mcp.svg" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/pedigree-mcp"><img src="https://img.shields.io/npm/dm/pedigree-mcp.svg" alt="npm downloads"></a>
